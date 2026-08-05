@@ -479,7 +479,7 @@ export function renderUniversalTracker(container, state) {
       row.style.alignItems = 'center';
       
       row.innerHTML = `
-        <input type="text" class="param-key pp-input" style="padding: 6px;" value="${key}" placeholder="Key (e.g. value)">
+        <input type="text" class="param-key pp-input" value="${key}" placeholder="Key (e.g. value)">
         <select class="param-val-type pp-select">
           <option value="static" ${valType === 'static' ? 'selected' : ''}>Static Value</option>
           <option value="innerText" ${valType === 'innerText' ? 'selected' : ''}>Element innerText</option>
@@ -488,7 +488,7 @@ export function renderUniversalTracker(container, state) {
           <option value="query_param" ${valType === 'query_param' ? 'selected' : ''}>URL Query Parameter</option>
           <option value="js_var" ${valType === 'js_var' ? 'selected' : ''}>JS Variable Value</option>
         </select>
-        <input type="text" class="param-val-src pp-input" style="padding: 6px; display: ${valType === 'innerText' ? 'none' : 'block'};" value="${valSource}" placeholder="${valType === 'static' ? 'e.g. USD' : 'e.g. data-price'}">
+        <input type="text" class="param-val-src pp-input" style="display: ${valType === 'innerText' ? 'none' : 'block'};" value="${valSource}" placeholder="${valType === 'static' ? 'e.g. USD' : 'e.g. data-price'}">
         <button class="btn-remove-param" style="border: none; background: transparent; color: var(--pp-danger); font-size: 18px; cursor: pointer; padding: 4px;">&times;</button>
       `;
       

@@ -3,7 +3,7 @@
  * Plugin Name: PixelOnWP
  * Plugin URI: https://huipper.com
  * Description: Enterprise-grade server-side tracking, Meta Pixel, CAPI, GTM, GA4, DataLayer, and WooCommerce tracking suite for WordPress.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Huipper
  * Author URI: https://huipper.com
  * Text Domain: pixel-on-wp
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
  * Main plugin constants.
  */
 if (!defined('PixelOnWP_VERSION')) {
-  define('PixelOnWP_VERSION', '1.0.0');
+  define('PixelOnWP_VERSION', '1.0.1');
 }
 
 if (!defined('OMNITRACK_GEMINI_KEY')) {

@@ -112,8 +112,8 @@ function renderRulesTab(container, f) {
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div>
-          <label class="pp-label" style="font-size: 13px;">Phone Number Length (Digits)</label>
-          <input type="number" class="pp-input fraud-cfg" data-key="phone_length" value="${f.phone_length}" min="7" max="15" style="width: 100px;">
+          <label class="pp-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--pp-text-main);">Phone Number Length (Digits)</label>
+          <input type="number" class="pp-input fraud-cfg" data-key="phone_length" value="${f.phone_length}" min="7" max="15" style="width: 120px;">
         </div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">

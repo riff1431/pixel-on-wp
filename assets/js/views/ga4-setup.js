@@ -302,7 +302,7 @@ export function renderGA4Setup(container, state) {
       row.style.alignItems = 'center';
 
       row.innerHTML = `
-        <input type="text" class="param-key pp-input" style="padding: 6px;" value="${key}" placeholder="Key (e.g. form_id)">
+        <input type="text" class="param-key pp-input" value="${key}" placeholder="Key (e.g. form_id)">
         <select class="param-val-type pp-select">
           <option value="static" ${valType === 'static' ? 'selected' : ''}>Fixed Text</option>
           <option value="innerText" ${valType === 'innerText' ? 'selected' : ''}>DOM Element Text</option>
@@ -311,7 +311,7 @@ export function renderGA4Setup(container, state) {
           <option value="query_param" ${valType === 'query_param' ? 'selected' : ''}>URL Query Param</option>
           <option value="js_var" ${valType === 'js_var' ? 'selected' : ''}>JS Variable</option>
         </select>
-        <input type="text" class="param-val-src pp-input" style="padding: 6px; display: ${valType === 'innerText' ? 'none' : 'block'};" value="${valSource}" placeholder="${valType === 'static' ? 'e.g. static_value' : 'e.g. #selector or parameter_name'}">
+        <input type="text" class="param-val-src pp-input" style="display: ${valType === 'innerText' ? 'none' : 'block'};" value="${valSource}" placeholder="${valType === 'static' ? 'e.g. static_value' : 'e.g. #selector or parameter_name'}">
         <button class="btn-remove-param" style="border: none; background: transparent; color: var(--pp-danger); font-size: 18px; cursor: pointer; padding: 4px;">&times;</button>
       `;
 

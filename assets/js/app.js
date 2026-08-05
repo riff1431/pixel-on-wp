@@ -17,6 +17,7 @@ import { renderHeaderFooter } from './views/header-footer.js?v=12';
 import { renderCookieConsent } from './views/cookie-consent.js?v=12';
 import { renderAiEngine } from './views/ai-engine.js?v=12';
 import { renderUniversalTracker } from './views/universal-tracker.js?v=12';
+import { renderDocumentation } from './views/documentation.js?v=12';
 import { enhanceAllSelects } from './components/select.js?v=12';
 
 // Make toast available globally
@@ -216,6 +217,12 @@ export function navigate(fullViewId) {
         break;
       case 'universal-tracker':
         renderUniversalTracker(main, state);
+        break;
+      case 'documentation':
+        renderDocumentation(main, state);
+        break;
+      case 'roas':
+        window.location.href = 'admin.php?page=pixelonwp-roas';
         break;
       default:
         main.innerHTML = `<div class="pp-view-header"><h2>View not found</h2><p>Please select an item from the menu.</p></div>`;

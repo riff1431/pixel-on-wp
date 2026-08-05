@@ -49,147 +49,212 @@ class PixelOnWP_Admin_Menu
   {
     $capability = \PixelOnWP\Includes\Helpers\PixelOnWP_Helper::get_admin_capability();
 
+    // Dynamic 3D SVG icon data URI for main menu item
+    $main_icon_svg = 'data:image/svg+xml;base64,' . base64_encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">' .
+      '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="#e11d48"/>' .
+      '<path d="M3.27 6.96L12 12.01l8.73-5.05" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' .
+      '<line x1="12" y1="22.08" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>' .
+      '</svg>'
+    );
+
     add_menu_page(
       __('PixelOnWP', 'pixel-on-wp'),
       __('PixelOnWP', 'pixel-on-wp'),
       $capability,
       'pixelonwp-dashboard',
       [$this, 'render_dashboard_page'],
-      'dashicons-chart-line',
+      $main_icon_svg,
       56
     );
 
+    // 1. Dashboard
     add_submenu_page(
       'pixelonwp-dashboard',
       __('Dashboard', 'pixel-on-wp'),
-      __('Dashboard', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-dashboard"></span> ' . __('Dashboard', 'pixel-on-wp'),
       $capability,
       'pixelonwp-dashboard',
       [$this, 'render_dashboard_page']
     );
 
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Settings', 'pixel-on-wp'),
-      __('Settings', 'pixel-on-wp'),
-      $capability,
-      'wpt-settings',
-      [$this, 'render_settings_page']
-    );
-
+    // 2. Setup Wizard
     add_submenu_page(
       'pixelonwp-dashboard',
       __('Setup Wizard', 'pixel-on-wp'),
-      __('Setup Wizard', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-admin-customizer"></span> ' . __('Setup Wizard', 'pixel-on-wp'),
       $capability,
       'wpt-setup',
       [$this, 'render_dashboard_page']
     );
 
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Server-Side API', 'pixel-on-wp'),
-      __('Server-Side API', 'pixel-on-wp'),
-      $capability,
-      'wpt-server-side',
-      [$this, 'render_dashboard_page']
-    );
-
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Event Manager', 'pixel-on-wp'),
-      __('Event Manager', 'pixel-on-wp'),
-      $capability,
-      'wpt-events',
-      [$this, 'render_dashboard_page']
-    );
-
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Ecommerce Events', 'pixel-on-wp'),
-      __('Ecommerce Events', 'pixel-on-wp'),
-      $capability,
-      'wpt-ecommerce',
-      [$this, 'render_dashboard_page']
-    );
-    
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Fraud Prevention', 'pixel-on-wp'),
-      __('Fraud Prevention', 'pixel-on-wp'),
-      $capability,
-      'wpt-fraud',
-      [$this, 'render_dashboard_page']
-    );
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('AI Ad Engine', 'pixel-on-wp'),
-      __('AI Ad Engine', 'pixel-on-wp'),
-      $capability,
-      'wpt-ai-engine',
-      [$this, 'render_dashboard_page']
-    );
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Ad Attribution & ROAS', 'pixel-on-wp'),
-      __('Ad Attribution & ROAS', 'pixel-on-wp'),
-      $capability,
-      'pixelonwp-roas',
-      [new \PixelOnWP\Admin\PixelOnWP_Roas_Admin_Ui(), 'render_dashboard']
-    );
-
-    // Hidden Admin Docs (to be removed post-dev)
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('All Features (Admin Docs)', 'pixel-on-wp'),
-      __('Admin Docs', 'pixel-on-wp'),
-      $capability,
-      'pixel-admin-docs',
-      [$this, 'render_admin_docs_page']
-    );
-
-    add_submenu_page(
-      'pixelonwp-dashboard',
-      __('Diagnostics & Logs', 'pixel-on-wp'),
-      __('Diagnostics & Logs', 'pixel-on-wp'),
-      $capability,
-      'wpt-diagnostics',
-      [$this, 'render_diagnostics_page']
-    );
-
+    // 3. License Activation
     add_submenu_page(
       'pixelonwp-dashboard',
       __('License Activation', 'pixel-on-wp'),
-      __('License Activation', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-lock"></span> ' . __('License Activation', 'pixel-on-wp'),
       $capability,
       'wpt-license',
       [$this, 'render_dashboard_page']
     );
 
+    // 4. Server-Side & ITP
     add_submenu_page(
       'pixelonwp-dashboard',
-      __('Clear All History', 'pixel-on-wp'),
-      __('Clear All History', 'pixel-on-wp'),
+      __('Server-Side & ITP', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-database-export"></span> ' . __('Server-Side & ITP', 'pixel-on-wp'),
       $capability,
-      'wpt-reset',
+      'wpt-server-side',
       [$this, 'render_dashboard_page']
     );
 
+    // 5. Event Manager
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Event Manager', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-edit-page"></span> ' . __('Event Manager', 'pixel-on-wp'),
+      $capability,
+      'wpt-events',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 6. GTM Integration
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('GTM Integration', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-tag"></span> ' . __('GTM Integration', 'pixel-on-wp'),
+      $capability,
+      'wpt-gtmsetup',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 7. Universal Tracker
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Universal Tracker', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-location-alt"></span> ' . __('Universal Tracker', 'pixel-on-wp'),
+      $capability,
+      'wpt-universal-tracker',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 8. AI Ad Engine
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('AI Ad Engine', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-chart-area"></span> ' . __('AI Ad Engine', 'pixel-on-wp'),
+      $capability,
+      'wpt-ai-engine',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 9. Fraud Prevention
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Fraud Prevention', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-shield"></span> ' . __('Fraud Prevention', 'pixel-on-wp'),
+      $capability,
+      'wpt-fraud',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 10. eCommerce Tools
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('eCommerce Tools', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-cart"></span> ' . __('eCommerce Tools', 'pixel-on-wp'),
+      $capability,
+      'wpt-ecommerce',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 11. Ad Attribution & ROAS
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Ad Attribution & ROAS', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-analytics"></span> ' . __('Ad Attribution & ROAS', 'pixel-on-wp'),
+      $capability,
+      'pixelonwp-roas',
+      [new \PixelOnWP\Admin\PixelOnWP_Roas_Admin_Ui(), 'render_dashboard']
+    );
+
+    // 12. DataLayer & Settings
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('DataLayer & Settings', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-admin-generic"></span> ' . __('DataLayer & Settings', 'pixel-on-wp'),
+      $capability,
+      'wpt-settings',
+      [$this, 'render_settings_page']
+    );
+
+    // 13. Diagnostics & Logs
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Diagnostics & Logs', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-pulse"></span> ' . __('Diagnostics & Logs', 'pixel-on-wp'),
+      $capability,
+      'wpt-diagnostics',
+      [$this, 'render_diagnostics_page']
+    );
+
+    // 14. UTM Builder
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('UTM Builder', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-admin-links"></span> ' . __('UTM Builder', 'pixel-on-wp'),
+      $capability,
+      'wpt-utm-builder',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 15. Header & Footer
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Header & Footer', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-editor-code"></span> ' . __('Header & Footer', 'pixel-on-wp'),
+      $capability,
+      'wpt-header-footer',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 16. Cookie Consent v2
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Cookie Consent v2', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-privacy"></span> ' . __('Cookie Consent v2', 'pixel-on-wp'),
+      $capability,
+      'wpt-cookie-consent',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 17. Admin Docs
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('All Features (Admin Docs)', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-media-document"></span> ' . __('Admin Docs', 'pixel-on-wp'),
+      $capability,
+      'pixel-admin-docs',
+      [$this, 'render_admin_docs_page']
+    );
+
+    // 18. Documentation
     add_submenu_page(
       'pixelonwp-dashboard',
       __('Documentation', 'pixel-on-wp'),
-      __('Documentation', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-welcome-learn-more"></span> ' . __('Documentation', 'pixel-on-wp'),
       $capability,
       'pixelonwp-documentation',
       [$this, 'render_documentation_page']
     );
 
+    // 19. Clear History
     add_submenu_page(
       'pixelonwp-dashboard',
-      __('Universal Tracker', 'pixel-on-wp'),
-      __('Universal Tracker', 'pixel-on-wp'),
+      __('Clear History', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-trash"></span> ' . __('Clear History', 'pixel-on-wp'),
       $capability,
-      'wpt-universal-tracker',
+      'wpt-reset',
       [$this, 'render_dashboard_page']
     );
   }
