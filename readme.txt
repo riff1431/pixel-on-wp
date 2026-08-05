@@ -1,5 +1,5 @@
 === PixelOnWP ===
-Contributors: pixel-on-wp-team
+Contributors: huipper, riff1431
 Tags: meta pixel, conversions api, server-side tracking, datalayer, woocommerce tracking, gtm, ga4
 Requires at least: 6.0
 Tested up to: 6.5

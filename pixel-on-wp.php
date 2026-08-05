@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: PixelOnWP
- * Plugin URI: https://example.com/pixel-on-wp
+ * Plugin URI: https://huipper.com
  * Description: Enterprise-grade server-side tracking, Meta Pixel, CAPI, GTM, GA4, DataLayer, and WooCommerce tracking suite for WordPress.
  * Version: 1.0.0
- * Author: PixelOnWP Team
- * Author URI: https://example.com
+ * Author: Huipper
+ * Author URI: https://huipper.com
  * Text Domain: pixel-on-wp
  * Domain Path: /languages
  * Requires at least: 6.0
