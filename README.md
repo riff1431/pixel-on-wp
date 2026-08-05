@@ -152,10 +152,16 @@ PixelOnWP follows official **WordPress Plugin Developer Security Guidelines**:
 
 ---
 
+## 👥 Credits & Maintainers
+
+Developed & Maintained by **[Huipper](https://huipper.com)**.
+
+---
+
 ## 📄 License
 
 Distributed under the **GPL v2 or later** License. See `LICENSE` for more information.
 
 ---
 
-Made with ❤️ by [riff1431](https://github.com/riff1431)
+Made with ❤️ by [Huipper](https://huipper.com) & [riff1431](https://github.com/riff1431)
