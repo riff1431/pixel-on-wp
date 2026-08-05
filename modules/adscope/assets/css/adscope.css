@@ -1,0 +1,196 @@
+:root {
+    --adscope-bg: #f3f4f6;
+    --adscope-card-bg: #ffffff;
+    --adscope-border: #e5e7eb;
+    --adscope-text-main: #111827;
+    --adscope-text-muted: #6b7280;
+    --adscope-primary: #3b82f6;
+    --adscope-primary-hover: #2563eb;
+    --adscope-success: #10b981;
+    --adscope-warning: #f59e0b;
+    --adscope-danger: #ef4444;
+}
+
+/* Dark mode overrides if needed */
+@media (prefers-color-scheme: dark) {
+    /* If the plugin supports dark mode via body class, we can adapt. For now sticking to a clean light/dark safe layout */
+}
+
+.adscope-dashboard {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--adscope-text-main);
+    padding: 24px 24px 24px 0;
+    box-sizing: border-box;
+}
+
+.adscope-dashboard * {
+    box-sizing: border-box;
+}
+
+.adscope-header {
+    margin-bottom: 32px;
+}
+
+.adscope-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #111827;
+    letter-spacing: -0.02em;
+}
+
+.adscope-header p {
+    font-size: 15px;
+    color: var(--adscope-text-muted);
+    margin: 0;
+}
+
+/* Grid Layouts */
+.adscope-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.adscope-main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .adscope-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cards */
+.adscope-card {
+    background: var(--adscope-card-bg);
+    border: 1px solid var(--adscope-border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adscope-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.adscope-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--adscope-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* KPI specifics */
+.adscope-kpi-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--adscope-text-main);
+    line-height: 1.2;
+}
+
+/* Table */
+.adscope-table-wrapper {
+    overflow-x: auto;
+    margin: 0 -24px;
+    padding: 0 24px;
+}
+
+.adscope-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.adscope-table th {
+    text-align: left;
+    padding: 12px 16px;
+    color: var(--adscope-text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--adscope-border);
+    white-space: nowrap;
+}
+
+.adscope-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--adscope-border);
+    color: var(--adscope-text-main);
+}
+
+.adscope-table tr:last-child td {
+    border-bottom: none;
+}
+
+.adscope-table tbody tr:hover {
+    background-color: rgba(249, 250, 251, 0.5);
+}
+
+/* Badges */
+.adscope-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #374151;
+}
+.adscope-badge.primary { background: #dbeafe; color: #1d4ed8; }
+.adscope-badge.success { background: #d1fae5; color: #047857; }
+
+/* AI Blueprint Section */
+.adscope-ai-card {
+    background: linear-gradient(145deg, #1e1b4b, #312e81);
+    color: white;
+    border: none;
+}
+.adscope-ai-card .adscope-card-title {
+    color: #a5b4fc;
+}
+
+.adscope-ai-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.adscope-ai-label {
+    font-size: 12px;
+    color: #818cf8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.adscope-ai-value {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.adscope-ai-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.adscope-ai-tag {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+}

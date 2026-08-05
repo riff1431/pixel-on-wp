@@ -1,0 +1,12 @@
+/**
+ * PixelOnWP - Frontend Tracking Styles
+ *
+ * @package PixelOnWP
+ * @since 1.0.0
+ */
+
+/* Invisible utility or notification classes if required by frontend trackers */
+.wpt-hidden-tracking-element {
+  display: none !important;
+  visibility: hidden !important;
+}

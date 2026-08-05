@@ -1,0 +1,227 @@
+/**
+ * PixelOnWP - Modern SaaS Admin Dashboard Styles
+ *
+ * @package PixelOnWP
+ * @since 1.0.0
+ */
+
+:root {
+  --wpt-bg-primary: #0f172a;
+  --wpt-bg-secondary: #1e293b;
+  --wpt-bg-card: #1e293b;
+  --wpt-border-color: #334155;
+  --wpt-text-primary: #f8fafc;
+  --wpt-text-secondary: #94a3b8;
+  --wpt-accent: #6366f1;
+  --wpt-accent-hover: #4f46e5;
+  --wpt-success: #10b981;
+  --wpt-warning: #f59e0b;
+  --wpt-danger: #ef4444;
+  --wpt-radius: 12px;
+  --wpt-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wpt-wrap {
+  background-color: var(--wpt-bg-primary);
+  color: var(--wpt-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 24px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.wpt-wrap * {
+  box-sizing: border-box;
+}
+
+/* Header */
+.wpt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--wpt-border-color);
+  padding-bottom: 16px;
+}
+
+.wpt-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wpt-logo-area h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--wpt-text-primary);
+  margin: 0;
+}
+
+.wpt-version-badge {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--wpt-accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Dashboard Grid & Cards */
+.wpt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.wpt-card {
+  background: var(--wpt-bg-card);
+  border: 1px solid var(--wpt-border-color);
+  border-radius: var(--wpt-radius);
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: var(--wpt-transition);
+}
+
+.wpt-card:hover {
+  border-color: var(--wpt-accent);
+  transform: translateY(-1px);
+}
+
+.wpt-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wpt-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px 0;
+}
+
+.wpt-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--wpt-text-primary);
+  margin: 0;
+}
+
+/* Status Badges */
+.wpt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.wpt-badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--wpt-success);
+}
+
+.wpt-badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--wpt-danger);
+}
+
+/* Forms & Inputs */
+.wpt-form-group {
+  margin-bottom: 20px;
+}
+
+.wpt-form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--wpt-text-primary);
+}
+
+.wpt-input,
+.wpt-select,
+.wpt-textarea {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid var(--wpt-border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--wpt-text-primary);
+  font-size: 14px;
+  transition: var(--wpt-transition);
+}
+
+.wpt-input:focus,
+.wpt-select:focus,
+.wpt-textarea:focus {
+  outline: none;
+  border-color: var(--wpt-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Buttons */
+.wpt-btn {
+  background: var(--wpt-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--wpt-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.wpt-btn:hover {
+  background: var(--wpt-accent-hover);
+}
+
+/* Toggle Switch */
+.wpt-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.wpt-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.wpt-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--wpt-border-color);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.wpt-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked+.wpt-slider {
+  background-color: var(--wpt-accent);
+}
+
+input:checked+.wpt-slider:before {
+  transform: translateX(24px);
+}
