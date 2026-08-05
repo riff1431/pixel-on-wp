@@ -8,6 +8,8 @@ ehthumbs.db
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # Node / Build output (if applicable)
 node_modules/
@@ -15,5 +17,27 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Temporary files
+# Environment & Secret files
+.env
+.env.*
+*.pem
+*.key
+
+# Logs & Debugging
+*.log
+debug.log
+
+# WordPress & Local Dev Scratch Scripts
+scratch_*.php
+check-opt.php
+trigger.php
+rename.js
+rename.ps1
+temp_setup.js
+
+# Temporary files & Archives
 *.tmp
+*.bak
+*.zip
+*.tar.gz
+*.sql
