@@ -192,7 +192,7 @@ class PixelOnWP_Admin_Menu
     add_submenu_page(
       'pixelonwp-dashboard',
       __('Diagnostics & Logs', 'pixel-on-wp'),
-      '<span class="dashicons dashicons-pulse"></span> ' . __('Diagnostics & Logs', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-performance"></span> ' . __('Diagnostics & Logs', 'pixel-on-wp'),
       $capability,
       'wpt-diagnostics',
       [$this, 'render_diagnostics_page']
