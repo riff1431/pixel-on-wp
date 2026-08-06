@@ -5,11 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Layout Setup
     root.className = 'adscope-dashboard';
     root.innerHTML = `
-        <div class="adscope-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h1>PixelOnWP AI Intelligence Dashboard</h1>
-                <p>Real-time telemetry, IP intelligence, and automated Smart Ad Blueprints.</p>
-            </div>
+        <div class="adscope-header" style="display: flex; justify-content: flex-end; align-items: center;">
             <div>
                 <button id="adscope-clear-btn" class="pp-btn pp-btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Clear All History</button>
             </div>

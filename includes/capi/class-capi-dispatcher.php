@@ -24,49 +24,72 @@ class PixelOnWP_Capi_Dispatcher
    */
   public static function dispatch(array $event_data): void
   {
-    $meta_config = get_option('PixelOnWP_meta_config', []);
-    $pixel_id = isset($meta_config['pixel_id']) ? trim($meta_config['pixel_id']) : '';
-    $capi_token = isset($meta_config['capi_token']) ? trim($meta_config['capi_token']) : '';
-    $test_code = isset($meta_config['test_code']) ? trim($meta_config['test_code']) : '';
-
-    if (empty($pixel_id) || empty($capi_token)) {
-        if (class_exists('\\PixelOnWP\\Includes\\Core\\PixelOnWP_Logger')) {
-            $logger = new \PixelOnWP\Includes\Core\PixelOnWP_Logger();
-            $logger->log_event($event_data['event_name'], $event_data['event_id'], [], 'skipped', 'facebook');
-        }
-        return;
+    $pixels = [];
+    if (class_exists('\\PixelOnWP\\Includes\\Tracking\\PixelOnWP_Meta_Multi_Pixel_Helper')) {
+      $pixels = \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Multi_Pixel_Helper::get_pixels();
+    } else {
+      $meta_config = get_option('PixelOnWP_meta_config', []);
+      $legacy_pixel_id = isset($meta_config['pixel_id']) ? trim($meta_config['pixel_id']) : '';
+      $legacy_capi_token = isset($meta_config['capi_token']) ? trim($meta_config['capi_token']) : '';
+      if (!empty($legacy_pixel_id) && !empty($legacy_capi_token)) {
+        $pixels[] = [
+          'pixel_id'   => $legacy_pixel_id,
+          'capi_token' => $legacy_capi_token,
+          'test_code'  => isset($meta_config['test_code']) ? trim($meta_config['test_code']) : '',
+          'setup_type' => 'advanced',
+        ];
+      }
     }
 
+    $capi_pixels = array_filter($pixels, function($p) {
+      return !empty($p['pixel_id']) && !empty($p['capi_token']) && ($p['setup_type'] ?? 'advanced') === 'advanced';
+    });
+
+    if (empty($capi_pixels)) {
+      if (class_exists('\\PixelOnWP\\Includes\\Core\\PixelOnWP_Logger')) {
+        $logger = new \PixelOnWP\Includes\Core\PixelOnWP_Logger();
+        $logger->log_event($event_data['event_name'], $event_data['event_id'], [], 'skipped', 'facebook');
+      }
+      return;
+    }
+
+    // Format single shared payload preserving exact event_id and hashing logic across all pixels
     $formatted_event = self::format_payload($event_data);
-    $payload = [
-      'data' => [$formatted_event],
-    ];
 
-    if (!empty($test_code)) {
-      $payload['test_event_code'] = $test_code;
-    }
+    foreach ($capi_pixels as $p) {
+      $pixel_id   = $p['pixel_id'];
+      $capi_token = $p['capi_token'];
+      $test_code  = $p['test_code'] ?? '';
 
-    $url = "https://graph.facebook.com/v19.0/{$pixel_id}/events?access_token={$capi_token}";
+      $payload = [
+        'data' => [$formatted_event],
+      ];
 
-    $response = wp_remote_post($url, [
-      'method'      => 'POST',
-      'timeout'     => 15,
-      'redirection' => 5,
-      'httpversion' => '1.1',
-      'blocking'    => false,
-      'sslverify'   => false,
-      'headers'     => [
-        'Content-Type' => 'application/json',
-      ],
-      'body'        => wp_json_encode($payload),
-    ]);
+      if (!empty($test_code)) {
+        $payload['test_event_code'] = $test_code;
+      }
 
-    // Log the result
-    if (class_exists('\\PixelOnWP\\Includes\\Core\\PixelOnWP_Logger')) {
-      $logger = new \PixelOnWP\Includes\Core\PixelOnWP_Logger();
-      // Since it's non-blocking, we don't get an immediate HTTP 200 response, so we log as dispatched
-      $status = is_wp_error($response) ? 'failed' : 'dispatched';
-      $logger->log_event($event_data['event_name'], $event_data['event_id'], $payload, $status, 'facebook');
+      $url = "https://graph.facebook.com/v19.0/{$pixel_id}/events?access_token={$capi_token}";
+
+      $response = wp_remote_post($url, [
+        'method'      => 'POST',
+        'timeout'     => 15,
+        'redirection' => 5,
+        'httpversion' => '1.1',
+        'blocking'    => false,
+        'sslverify'   => false,
+        'headers'     => [
+          'Content-Type' => 'application/json',
+        ],
+        'body'        => wp_json_encode($payload),
+      ]);
+
+      // Log the result
+      if (class_exists('\\PixelOnWP\\Includes\\Core\\PixelOnWP_Logger')) {
+        $logger = new \PixelOnWP\Includes\Core\PixelOnWP_Logger();
+        $status = is_wp_error($response) ? 'failed' : 'dispatched';
+        $logger->log_event($event_data['event_name'], $event_data['event_id'], $payload, $status, 'facebook (' . $pixel_id . ')');
+      }
     }
   }
 

@@ -2,14 +2,6 @@ export function renderGA4Setup(container, state) {
   let activeTab = 'general';
   let customEvents = window.pixelonwp_admin_vars?.config?.ga4_custom_events || state.config?.ga4_custom_events || [];
 
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>Google Analytics 4 Setup</h2>
-    <p>Configure your GA4 Measurement ID and manage Custom Events with dynamic parameter mapping.</p>
-  `;
-  container.appendChild(header);
-
   // Tab Navigation Bar
   const navBar = document.createElement('div');
   navBar.className = 'pp-tabs-container';
@@ -242,7 +234,7 @@ export function renderGA4Setup(container, state) {
             <p style="color: var(--pp-text-muted); font-size: 11px; margin-top: 4px;">Must contain only lowercase letters, numbers, and underscores (strict GA4 format).</p>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="pp-grid-2col" style="gap: 16px;">
             <div>
               <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">Trigger Type</label>
               <select id="evt-trigger" class="pp-select">
@@ -295,11 +287,8 @@ export function renderGA4Setup(container, state) {
 
     const addParamRow = (key = '', valType = 'static', valSource = '') => {
       const row = document.createElement('div');
-      row.className = 'param-row';
-      row.style.display = 'grid';
-      row.style.gridTemplateColumns = '2fr 2fr 3fr auto';
+      row.className = 'param-row pp-param-row';
       row.style.gap = '8px';
-      row.style.alignItems = 'center';
 
       row.innerHTML = `
         <input type="text" class="param-key pp-input" value="${key}" placeholder="Key (e.g. form_id)">

@@ -1,15 +1,7 @@
 export function renderLicense(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>License Activation</h2>
-    <p>Activate your PixelOnWP Pro license to unlock server-side tracking, TikTok integrations, and premium support.</p>
-  `;
 
   const contentGrid = document.createElement('div');
-  contentGrid.style.display = 'grid';
-  contentGrid.style.gridTemplateColumns = '2fr 1fr';
-  contentGrid.style.gap = '24px';
+  contentGrid.className = 'pp-grid-unequal-2-1';
   contentGrid.style.maxWidth = '1000px';
 
   // License Input Card
@@ -81,7 +73,7 @@ export function renderLicense(container, state) {
       <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 8px 0; color: var(--pp-text-main);">License Inactive</h3>
       <p style="font-size: 13px; color: var(--pp-text-muted); margin-bottom: 24px;">Please activate your license to unlock Server-Side tracking and CAPI integration.</p>
       
-      <button class="pp-btn" style="width: 100%; background: var(--pp-surface-solid); color: var(--pp-text-main); border: 1px solid var(--pp-border-strong);">
+      <button class="pp-btn-outline" style="width: 100%; justify-content: center;">
         Upgrade to Pro
       </button>
     `;
@@ -90,6 +82,5 @@ export function renderLicense(container, state) {
   contentGrid.appendChild(licenseCard);
   contentGrid.appendChild(statusBox);
 
-  container.appendChild(header);
   container.appendChild(contentGrid);
 }

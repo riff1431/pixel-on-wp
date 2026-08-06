@@ -1,15 +1,7 @@
 export function renderServerSide(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>Server-Side & ITP Bypass</h2>
-    <p>Configure your first-party collection endpoint and isolated GA4 Measurement Protocol integration to bypass browser trackers limitations.</p>
-  `;
 
   const dashboardGrid = document.createElement('div');
-  dashboardGrid.style.display = 'grid';
-  dashboardGrid.style.gridTemplateColumns = '1fr 1fr';
-  dashboardGrid.style.gap = '24px';
+  dashboardGrid.className = 'pp-grid-2col';
   dashboardGrid.style.marginBottom = '40px';
 
   // Architectural Diagram Card
@@ -20,10 +12,10 @@ export function renderServerSide(container, state) {
     <div class="pp-card-header">
       <div class="pp-card-title">First-Party Routing Architecture</div>
     </div>
-    <div style="display: flex; align-items: center; justify-content: space-between; padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--pp-radius); border: 1px solid var(--pp-border-strong);">
+    <div class="pp-architect-diagram" style="display: flex; align-items: center; justify-content: space-between; padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--pp-radius); border: 1px solid var(--pp-border-strong);">
       
       <!-- Browser Node -->
-      <div style="text-align: center; flex: 1;">
+      <div class="pp-diagram-node" style="text-align: center; flex: 1;">
         <div style="width: 72px; height: 72px; margin: 0 auto 12px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.85) 100%); border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px -6px rgba(14, 165, 233, 0.22), inset 0 1.5px 1.5px rgba(255, 255, 255, 1); transition: transform 0.3s ease;">
           <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe">
             <circle cx="12" cy="12" r="10"/>
@@ -36,13 +28,13 @@ export function renderServerSide(container, state) {
       </div>
 
       <!-- Arrow 1 -->
-      <div style="flex: 1; text-align: center; position: relative; padding: 0 8px;">
-        <div style="height: 3px; background: linear-gradient(90deg, #0284c7 0%, var(--pp-primary) 100%); width: 100%; position: absolute; top: 50%; z-index: 1; border-radius: 4px;"></div>
-        <div class="pp-status-dot pulse" style="position: absolute; top: calc(50% - 5px); left: 50%; z-index: 2; background: var(--pp-primary); box-shadow: 0 0 12px var(--pp-primary-glow);"></div>
+      <div class="pp-diagram-arrow" style="flex: 1; text-align: center; position: relative; padding: 0 8px;">
+        <div class="pp-diagram-arrow-line" style="height: 3px; background: linear-gradient(90deg, #0284c7 0%, var(--pp-primary) 100%); width: 100%; position: absolute; top: 50%; z-index: 1; border-radius: 4px;"></div>
+        <div class="pp-status-dot pulse pp-diagram-arrow-dot" style="position: absolute; top: calc(50% - 5px); left: 50%; z-index: 2; background: var(--pp-primary); box-shadow: 0 0 12px var(--pp-primary-glow);"></div>
       </div>
 
       <!-- First Party Endpoint Node (Central Server Hub) -->
-      <div style="text-align: center; flex: 1;">
+      <div class="pp-diagram-node" style="text-align: center; flex: 1;">
         <div style="width: 84px; height: 84px; margin: 0 auto 12px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(254, 226, 226, 0.9) 100%); border: 2.2px solid var(--pp-primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 16px 36px -6px rgba(225, 29, 72, 0.32), 0 0 24px rgba(225, 29, 72, 0.18), inset 0 2px 2px rgba(255, 255, 255, 1); transition: transform 0.3s ease;">
           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--pp-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-server">
             <rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
@@ -57,13 +49,13 @@ export function renderServerSide(container, state) {
       </div>
 
       <!-- Arrow 2 -->
-      <div style="flex: 1; text-align: center; position: relative; padding: 0 8px;">
-        <div style="height: 3px; background: linear-gradient(90deg, var(--pp-primary) 0%, #d946ef 100%); width: 100%; position: absolute; top: 50%; z-index: 1; border-radius: 4px;"></div>
-        <div style="position: absolute; top: calc(50% - 22px); left: 0; right: 0; text-align: center; font-size: 10px; color: var(--pp-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Server-to-Server</div>
+      <div class="pp-diagram-arrow" style="flex: 1; text-align: center; position: relative; padding: 0 8px;">
+        <div class="pp-diagram-arrow-line" style="height: 3px; background: linear-gradient(90deg, var(--pp-primary) 0%, #d946ef 100%); width: 100%; position: absolute; top: 50%; z-index: 1; border-radius: 4px;"></div>
+        <div class="pp-diagram-arrow-label" style="position: absolute; top: calc(50% - 22px); left: 0; right: 0; text-align: center; font-size: 10px; color: var(--pp-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Server-to-Server</div>
       </div>
 
       <!-- Meta CAPI Node -->
-      <div style="text-align: center; flex: 1;">
+      <div class="pp-diagram-node" style="text-align: center; flex: 1;">
         <div style="width: 72px; height: 72px; margin: 0 auto 12px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(243, 232, 255, 0.85) 100%); border: 1.5px solid rgba(217, 70, 239, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px -6px rgba(217, 70, 239, 0.22), inset 0 1.5px 1.5px rgba(255, 255, 255, 1); transition: transform 0.3s ease;">
           <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share-2">
             <circle cx="18" cy="5" r="3"/>
@@ -199,7 +191,6 @@ export function renderServerSide(container, state) {
   dashboardGrid.appendChild(statusCard);
   dashboardGrid.appendChild(configCard);
 
-  container.appendChild(header);
   container.appendChild(dashboardGrid);
 
   // Bind save event

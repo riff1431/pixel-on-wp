@@ -248,7 +248,17 @@ class PixelOnWP_Admin_Menu
       [$this, 'render_documentation_page']
     );
 
-    // 19. Clear History
+    // 19. Support Center
+    add_submenu_page(
+      'pixelonwp-dashboard',
+      __('Support Center', 'pixel-on-wp'),
+      '<span class="dashicons dashicons-sos"></span> ' . __('Support Center', 'pixel-on-wp'),
+      $capability,
+      'wpt-support',
+      [$this, 'render_dashboard_page']
+    );
+
+    // 20. Clear History
     add_submenu_page(
       'pixelonwp-dashboard',
       __('Clear History', 'pixel-on-wp'),
@@ -363,6 +373,9 @@ class PixelOnWP_Admin_Menu
             'reddit_tracking_mode' => get_option('PixelOnWP_reddit_tracking_mode', 'hybrid'),
             'custom_route' => get_option('PixelOnWP_custom_route', 'wp-json/pixelonwp/v1/collect'),
           ],
+          'settings' => get_option('PixelOnWP_settings', [
+            'visual_builder_enabled' => '1'
+          ]),
         ],
         'fraud_settings' => get_option('PixelOnWP_fraud_settings', [
           'enable_fraud_check' => '0',

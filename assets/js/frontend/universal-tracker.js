@@ -315,10 +315,23 @@
         }
 
         const fbData = getFbStandardParams(targetEventName, params);
-        if (standardEvents.includes(targetEventName)) {
-          window.fbq('track', targetEventName, fbData, { eventID: eventId });
+        const metaPixels = window.PixelOnWP_events?.meta_pixels || [];
+        const pixelIds = metaPixels.length > 0 
+          ? metaPixels.map(p => p.pixel_id || p.pixelId).filter(Boolean)
+          : (platforms.fb_pixel_id ? [platforms.fb_pixel_id] : []);
+
+        const isStandard = standardEvents.includes(targetEventName);
+        if (pixelIds.length > 0) {
+          const singleType = isStandard ? 'trackSingle' : 'trackSingleCustom';
+          pixelIds.forEach(pId => {
+            window.fbq(singleType, pId, targetEventName, fbData, { eventID: eventId });
+          });
         } else {
-          window.fbq('trackCustom', targetEventName, fbData, { eventID: eventId });
+          if (isStandard) {
+            window.fbq('track', targetEventName, fbData, { eventID: eventId });
+          } else {
+            window.fbq('trackCustom', targetEventName, fbData, { eventID: eventId });
+          }
         }
         firedPlatforms.push('Facebook');
         executionDetails['Facebook'] = { status: 'Sent', id: platforms.fb_pixel_id };

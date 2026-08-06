@@ -60,6 +60,7 @@ class PixelOnWP_Frontend
   }
 
   private static $cached_user_data = null;
+  private static $gtag_initialized = false;
 
   public static function get_unhashed_user_data(): array {
       if (self::$cached_user_data !== null) {
@@ -209,6 +210,7 @@ class PixelOnWP_Frontend
           'pinterest_tracking_mode' => 'hybrid',
           'custom_route' => site_url('/' . get_option('PixelOnWP_custom_route', 'wp-json/pixelonwp/v1/collect')),
           'meta_config' => get_option('PixelOnWP_meta_config', []),
+          'meta_pixels' => class_exists('\\PixelOnWP\\Includes\\Tracking\\PixelOnWP_Meta_Multi_Pixel_Helper') ? \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Multi_Pixel_Helper::get_pixels() : [],
           'tiktok_config' => get_option('PixelOnWP_tiktok_config', []),
           'reddit_config' => get_option('PixelOnWP_reddit_config', []),
           'pinterest_config' => get_option('PixelOnWP_pinterest_config', []),
@@ -351,9 +353,19 @@ class PixelOnWP_Frontend
       return;
     }
 
-    $meta_config = get_option('PixelOnWP_meta_config', []);
-    $pixel_id = isset($meta_config['pixel_id']) ? trim($meta_config['pixel_id']) : '';
-    if (empty($pixel_id)) {
+    $pixels = class_exists('\\PixelOnWP\\Includes\\Tracking\\PixelOnWP_Meta_Multi_Pixel_Helper') 
+      ? \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Multi_Pixel_Helper::get_pixels() 
+      : [];
+
+    if (empty($pixels)) {
+      $meta_config = get_option('PixelOnWP_meta_config', []);
+      $pixel_id = isset($meta_config['pixel_id']) ? trim($meta_config['pixel_id']) : '';
+      if (!empty($pixel_id)) {
+        $pixels[] = ['pixel_id' => $pixel_id];
+      }
+    }
+
+    if (empty($pixels)) {
       return;
     }
 
@@ -388,15 +400,17 @@ class PixelOnWP_Frontend
           t.src = v; var s = b.getElementsByTagName(e)[0];
           s.parentNode.insertBefore(t, s);
 
-          fbq('init', '<?php echo esc_js($pixel_id); ?>'<?php
-              $user_data = \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Tracker::get_hashed_user_data();
-              // Remove IP & User Agent since they are not used in init object
-              unset($user_data['client_ip_address']);
-              unset($user_data['client_user_agent']);
-              if (!empty($user_data)) {
-                  echo ', ' . wp_json_encode($user_data);
-              }
-            ?>);
+          <?php
+            $user_data = \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Tracker::get_hashed_user_data();
+            unset($user_data['client_ip_address']);
+            unset($user_data['client_user_agent']);
+            $user_data_arg = !empty($user_data) ? (', ' . wp_json_encode($user_data)) : '';
+
+            foreach ($pixels as $p) {
+              $pid = esc_js($p['pixel_id']);
+              echo "fbq('init', '{$pid}'{$user_data_arg});\n          ";
+            }
+          ?>
         }
         
         <?php if ($needs_consent) : ?>
@@ -729,11 +743,16 @@ class PixelOnWP_Frontend
 
     ?>
     <!-- Google tag (gtag.js) - injected by PixelOnWP -->
+    <?php if (!self::$gtag_initialized) : ?>
     <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($conversion_id); ?>"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      <?php self::$gtag_initialized = true; ?>
+    <?php else : ?>
+    <script>
+    <?php endif; ?>
 
       <?php
       if ($enhanced_conversions) {
@@ -758,11 +777,16 @@ class PixelOnWP_Frontend
     if (empty($ga4_id)) return;
     ?>
     <!-- GA4 Tag injected by PixelOnWP -->
+    <?php if (!self::$gtag_initialized) : ?>
     <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($ga4_id); ?>"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      <?php self::$gtag_initialized = true; ?>
+    <?php else : ?>
+    <script>
+    <?php endif; ?>
       gtag('config', '<?php echo esc_js($ga4_id); ?>');
     </script>
     <!-- End GA4 Tag -->

@@ -1,28 +1,8 @@
 export function renderUTMBuilder(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>UTM Campaign Builder</h2>
-    <p>Generate clean, trackable URLs for your marketing campaigns to accurately attribute traffic in Google Analytics and other platforms.</p>
-  `;
 
   const dashboardGrid = document.createElement('div');
-  dashboardGrid.style.display = 'grid';
-  dashboardGrid.style.gridTemplateColumns = '1fr 350px';
-  dashboardGrid.style.gap = '24px';
+  dashboardGrid.className = 'pp-grid-sidebar-right';
   dashboardGrid.style.marginBottom = '40px';
-
-  // Responsive layout style
-  const style = document.createElement('style');
-  style.innerHTML = `
-    @media (max-width: 1024px) {
-      #pp-utm-grid {
-        grid-template-columns: 1fr !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-  dashboardGrid.id = 'pp-utm-grid';
 
   // Form Card (Left)
   const formCard = document.createElement('div');
@@ -39,7 +19,7 @@ export function renderUTMBuilder(container, state) {
         <p style="font-size: 11px; color: var(--pp-text-muted); margin-top: 4px;">The full website URL (e.g. https://www.example.com)</p>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="pp-grid-2col" style="gap: 16px;">
         <div>
           <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--pp-text-main);">Campaign Source (utm_source) <span style="color:var(--pp-danger)">*</span></label>
           <input type="text" id="utm_source" class="pp-input" placeholder="e.g. facebook, google, newsletter">
@@ -58,7 +38,7 @@ export function renderUTMBuilder(container, state) {
         <p style="font-size: 11px; color: var(--pp-text-muted); margin-top: 4px;">Product, promo code, or slogan</p>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="pp-grid-2col" style="gap: 16px;">
         <div>
           <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--pp-text-main);">Campaign Term (utm_term)</label>
           <input type="text" id="utm_term" class="pp-input" placeholder="e.g. running_shoes">
@@ -127,7 +107,6 @@ export function renderUTMBuilder(container, state) {
   dashboardGrid.appendChild(formCard);
   dashboardGrid.appendChild(rightCol);
 
-  container.appendChild(header);
   container.appendChild(dashboardGrid);
 
   // Logic

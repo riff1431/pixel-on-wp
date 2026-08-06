@@ -40,15 +40,14 @@ class PixelOnWP_Fraud_Predictor
         $table_name = $wpdb->prefix . 'pixelonwp_visitor_intelligence';
 
         if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") !== $table_name) {
-            // Table not ready — return dummy
-            wp_send_json_success($this->get_dummy_fraud_data());
+            wp_send_json_error(['message' => 'No visitor traffic data available yet.']);
         }
 
         // Get last 50 distinct IPs to evaluate
         $visitors = $wpdb->get_results("SELECT ip_address, location_info, device_context, activity_log FROM {$table_name} ORDER BY last_active DESC LIMIT 50", ARRAY_A);
 
         if (empty($visitors)) {
-            wp_send_json_success($this->get_dummy_fraud_data());
+            wp_send_json_error(['message' => 'No visitor traffic data available yet.']);
         }
 
         $payload = [];
@@ -94,10 +93,8 @@ class PixelOnWP_Fraud_Predictor
             wp_send_json_success($ai_json);
         }
 
-        // AI failed — return dummy data
-        $dummy = $this->get_dummy_fraud_data();
-        set_transient('pixelonwp_ai_fraud_cache', $dummy, 300);
-        wp_send_json_success($dummy);
+        // AI failed — return error
+        wp_send_json_error(['message' => 'AI fraud prediction scan failed.']);
     }
 
     /**

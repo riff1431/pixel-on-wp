@@ -51,6 +51,7 @@ class PixelOnWP_Admin_Ajax
     $loader->add_action('wp_ajax_PixelOnWP_delete_tracker_rule', $this, 'delete_tracker_rule');
     $loader->add_action('wp_ajax_PixelOnWP_toggle_tracker_rule', $this, 'toggle_tracker_rule');
     $loader->add_action('wp_ajax_PixelOnWP_save_tracker_platforms', $this, 'save_tracker_platforms');
+    $loader->add_action('wp_ajax_PixelOnWP_toggle_live_debugger', $this, 'toggle_live_debugger');
     
     // Public logging hooks
     $loader->add_action('wp_ajax_nopriv_pixelonwp_log_consent_proof', $this, 'log_consent_proof');
@@ -356,10 +357,20 @@ class PixelOnWP_Admin_Ajax
     // Sanitize and save data
     $sanitized_platforms = is_array($platforms) ? array_map('sanitize_text_field', $platforms) : [];
     
+    $meta_pixels_input = [];
+    if (isset($meta['pixels']) && is_array($meta['pixels'])) {
+      $meta_pixels_input = $meta['pixels'];
+    } elseif (!empty($meta['pixelId']) || !empty($meta['pixel_id'])) {
+      $meta_pixels_input = [$meta];
+    }
+
+    $sanitized_pixels = \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Multi_Pixel_Helper::sanitize_pixels($meta_pixels_input);
+
     $sanitized_meta = [
-      'pixel_id' => sanitize_text_field($meta['pixelId'] ?? ''),
-      'capi_token' => sanitize_textarea_field($meta['capiToken'] ?? ''),
-      'test_code' => sanitize_text_field($meta['testCode'] ?? ''),
+      'pixels'     => $sanitized_pixels,
+      'pixel_id'   => $sanitized_pixels[0]['pixel_id'] ?? '',
+      'capi_token' => $sanitized_pixels[0]['capi_token'] ?? '',
+      'test_code'  => $sanitized_pixels[0]['test_code'] ?? '',
     ];
     
     $tiktok = isset($_POST['tiktok']) ? json_decode(wp_unslash($_POST['tiktok']), true) : [];
@@ -451,17 +462,29 @@ class PixelOnWP_Admin_Ajax
     if (!is_array($platforms)) $platforms = [];
     
     if ($platform === 'facebook') {
-      $sanitized_meta = [
-        'pixel_id' => sanitize_text_field($data['pixelId'] ?? ''),
-        'capi_token' => sanitize_textarea_field($data['capiToken'] ?? ''),
-        'test_code' => sanitize_text_field($data['testCode'] ?? ''),
-        'events' => [],
-      ];
-      if (isset($data['events']) && is_array($data['events'])) {
-          foreach ($data['events'] as $evt => $val) {
-              $sanitized_meta['events'][sanitize_text_field($evt)] = filter_var($val, FILTER_VALIDATE_BOOLEAN);
-          }
+      $meta_pixels_input = [];
+      if (isset($data['pixels']) && is_array($data['pixels'])) {
+        $meta_pixels_input = $data['pixels'];
+      } elseif (!empty($data['pixelId']) || !empty($data['pixel_id'])) {
+        $meta_pixels_input = [$data];
       }
+
+      $sanitized_pixels = \PixelOnWP\Includes\Tracking\PixelOnWP_Meta_Multi_Pixel_Helper::sanitize_pixels($meta_pixels_input);
+
+      $events_sanitized = [];
+      if (isset($data['events']) && is_array($data['events'])) {
+        foreach ($data['events'] as $evt => $val) {
+          $events_sanitized[sanitize_text_field($evt)] = filter_var($val, FILTER_VALIDATE_BOOLEAN);
+        }
+      }
+
+      $sanitized_meta = [
+        'pixels'     => $sanitized_pixels,
+        'pixel_id'   => $sanitized_pixels[0]['pixel_id'] ?? '',
+        'capi_token' => $sanitized_pixels[0]['capi_token'] ?? '',
+        'test_code'  => $sanitized_pixels[0]['test_code'] ?? '',
+        'events'     => $events_sanitized,
+      ];
       update_option('PixelOnWP_meta_config', $sanitized_meta);
       
       if (!in_array('facebook', $platforms)) {
@@ -1733,5 +1756,33 @@ class PixelOnWP_Admin_Ajax
 
     update_option('my_plugin_tracker_platforms', $platforms);
     wp_send_json_success(['message' => 'Platform settings saved successfully.', 'platforms' => $platforms]);
+  }
+
+  /**
+   * AJAX handler to toggle visual builder (Live Inspector/Debugger).
+   *
+   * @since 1.2.0
+   * @return void
+   */
+  public function toggle_live_debugger(): void
+  {
+    check_ajax_referer('PixelOnWP_nonce', 'nonce');
+    if (!current_user_can('manage_options') && !current_user_can('manage_woocommerce')) {
+      wp_send_json_error(['message' => 'Unauthorized.'], 403);
+    }
+
+    $enabled = isset($_POST['enabled']) ? sanitize_text_field(wp_unslash($_POST['enabled'])) : '0';
+    $settings = get_option('PixelOnWP_settings', []);
+    if (!is_array($settings)) {
+      $settings = [];
+    }
+    $settings['visual_builder_enabled'] = ($enabled === '1') ? '1' : '0';
+    update_option('PixelOnWP_settings', $settings);
+    update_option('pixelonwp_settings', $settings);
+
+    wp_send_json_success([
+      'message' => 'Live Inspector status updated.',
+      'visual_builder_enabled' => $settings['visual_builder_enabled']
+    ]);
   }
 }

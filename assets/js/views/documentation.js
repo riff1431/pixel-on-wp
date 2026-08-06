@@ -1,15 +1,6 @@
 export function renderDocumentation(container, state) {
   container.innerHTML = '';
 
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <div>
-      <h2>Documentation & Operational Manual</h2>
-      <p>Master your tracking setup, platform credentials sourcing, and server-side CAPI integrations.</p>
-    </div>
-  `;
-
   const content = document.createElement('div');
   content.className = 'pp-card';
   content.style.padding = '32px';
@@ -66,6 +57,5 @@ export function renderDocumentation(container, state) {
     </div>
   `;
 
-  container.appendChild(header);
   container.appendChild(content);
 }

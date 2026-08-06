@@ -1,13 +1,36 @@
 import { showToast } from '../components/toaster.js';
 
 export function renderSetup(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.style.marginBottom = '32px';
-  header.innerHTML = `
-    <h2 style="font-size: 1.5rem; color: var(--pp-text-main); margin-bottom: 8px;">Setup Wizard</h2>
-    <p style="color: var(--pp-text-muted); margin: 0;">Configure your tracking pixels and server-side connections.</p>
-  `;
+  // Remove existing modal if any to avoid ID conflicts
+  const existingModal = document.getElementById('pp-setup-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Inject animation keyframes
+  if (!document.getElementById('pp-setup-styles')) {
+    const style = document.createElement('style');
+    style.id = 'pp-setup-styles';
+    style.innerHTML = `
+      @keyframes pp-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .pp-spin-animate {
+        animation: pp-spin 1s linear infinite !important;
+      }
+      @keyframes pp-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .pp-fade-in-animate {
+        animation: pp-fade-in 0.3s ease-in-out forwards;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+
 
   const wizardContainer = document.createElement('div');
   wizardContainer.className = 'pp-wizard-container';
@@ -28,6 +51,7 @@ export function renderSetup(container, state) {
 
   // SVG Icons
   const icons = {
+    meta: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
     check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
     spinner: `<svg class="btn-spinner" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`,
     settings: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`
@@ -129,7 +153,7 @@ export function renderSetup(container, state) {
 
   const platformsGridContainer = document.createElement('div');
   platformsGridContainer.style.display = 'grid';
-  platformsGridContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(420px, 1fr))';
+  platformsGridContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(285px, 1fr))';
   platformsGridContainer.style.gap = '28px';
   platformsGridContainer.style.marginBottom = '32px';
 
@@ -139,7 +163,7 @@ export function renderSetup(container, state) {
     const buttonIcon = isActive ? '✓' : '↗';
 
     return `
-      <div class="pp-card pp-iconly-card ${isActive ? 'saved-active' : ''}" data-platform="${platform}" style="--pp-card-glow: ${theme.glowColor}; background: ${theme.bg}; border: ${theme.cardBorder || 'none'}; border-radius: 24px; padding: 32px 36px; min-height: 185px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 35px -8px rgba(15, 23, 42, 0.08);">
+      <div class="pp-card pp-setup-card pp-iconly-card ${isActive ? 'saved-active' : ''}" data-platform="${platform}" style="--pp-card-glow: ${theme.glowColor}; background: ${theme.bg}; border: ${theme.cardBorder || 'none'}; border-radius: 24px; padding: 32px 36px; min-height: 185px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 35px -8px rgba(15, 23, 42, 0.08);">
         
         ${isActive ? `<div style="position: absolute; top: 16px; right: 20px; background: rgba(255,255,255,0.25); backdrop-filter: blur(8px); color: ${theme.titleColor}; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; z-index: 3;">✓ ACTIVE</div>` : ''}
 
@@ -565,37 +589,28 @@ export function renderSetup(container, state) {
         </div>
       </div>
 
+      <!-- Preloader -->
+      <div id="modal-preloader" style="display: none; flex-direction: column; justify-content: center; align-items: center; padding: 60px 0; flex: 1; gap: 16px;">
+        <svg class="pp-spin-animate" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--pp-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+        <span style="font-size: 13px; color: var(--pp-text-muted); font-weight: 500; font-family: var(--pp-font-heading);">Loading configuration...</span>
+      </div>
+
       <div id="modal-body" style="padding: 32px; overflow-y: auto; flex: 1;">
         <div id="modal-error-msg" style="display:none; color: var(--pp-danger); margin-bottom: 24px; font-size: 14px; background: var(--pp-danger-bg); padding: 12px 16px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
 
         <!-- Meta Form -->
         <div class="platform-form" id="form-facebook" style="display: none;">
           <div class="tab-content" id="facebook-configuration">
-            <div class="setup-mode-toggle" style="display: flex; gap: 24px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--pp-border);">
-              <label class="pp-radio-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="radio" name="meta_mode" value="basic" ${!metaConfig.capi_token ? 'checked' : ''} style="accent-color: var(--pp-primary); width: 16px; height: 16px;">
-                <span style="font-size: 14px; color: var(--pp-text-main); font-weight: 500;">Basic Setup (Pixel Only)</span>
-              </label>
-              <label class="pp-radio-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="radio" name="meta_mode" value="advanced" ${metaConfig.capi_token ? 'checked' : ''} style="accent-color: var(--pp-primary); width: 16px; height: 16px;">
-                <span style="font-size: 14px; color: var(--pp-text-main); font-weight: 500;">Advanced Setup (Pixel + CAPI)</span>
-              </label>
+            <div id="meta-pixel-blocks-container">
+              <!-- Pixel blocks injected dynamically -->
             </div>
-            <div class="config-fields">
-              <div style="margin-bottom: 24px;">
-                <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Meta Pixel ID <span style="color: var(--pp-danger);">*</span></label>
-                <input type="text" id="meta-pixel-id" class="pp-input" value="${metaConfig.pixel_id || ''}" placeholder="e.g. 123456789012345">
-              </div>
-              <div id="meta-advanced-fields" style="display: ${metaConfig.capi_token ? 'block' : 'none'};">
-                <div style="margin-bottom: 24px;">
-                  <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Conversions API Access Token <span style="color: var(--pp-danger);">*</span></label>
-                  <textarea id="meta-capi-token" class="pp-input" rows="4" placeholder="Paste your CAPI token here...">${metaConfig.capi_token || ''}</textarea>
-                </div>
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Test Event Code (Optional)</label>
-                  <input type="text" id="meta-test-code" class="pp-input" value="${metaConfig.test_code || ''}" placeholder="e.g. TEST12345">
-                </div>
-              </div>
+            <div style="margin-top: 16px; margin-bottom: 24px; text-align: center;">
+              <button type="button" class="pp-btn-outline" id="meta-btn-add-pixel" style="display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--pp-primary) !important; color: var(--pp-primary) !important; background: transparent !important; padding: 10px 20px; font-weight: 600;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                + Add Another Pixel
+              </button>
             </div>
           </div>
           <div class="tab-content" id="facebook-events-control" style="display: none;">
@@ -786,7 +801,7 @@ export function renderSetup(container, state) {
         <!-- Google Form -->
         <div class="platform-form" id="form-google" style="display: none;">
           <div class="config-fields">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="pp-grid-2col" style="gap: 24px;">
               <div style="margin-bottom: 24px;">
                 <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Global Conversion ID <span style="color: var(--pp-danger);">*</span></label>
                 <input type="text" id="google-conversion-id" class="pp-input" value="${googleConfig.conversion_id || ''}" placeholder="AW-123456789">
@@ -816,8 +831,8 @@ export function renderSetup(container, state) {
         </div>
       </div>
       
-      <div style="padding: 20px 32px; border-top: 1px solid var(--pp-border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); border-bottom-left-radius: var(--pp-radius-lg); border-bottom-right-radius: var(--pp-radius-lg);">
-        <button class="pp-btn-outline" id="modal-remove-btn" style="display: none; color: var(--pp-danger); border-color: var(--pp-danger);">Remove Setup</button>
+      <div id="modal-footer" style="padding: 20px 32px; border-top: 1px solid var(--pp-border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.1); border-bottom-left-radius: var(--pp-radius-lg); border-bottom-right-radius: var(--pp-radius-lg);">
+        <button class="pp-btn-outline" id="modal-remove-btn" style="display: none; color: var(--pp-danger) !important; border-color: var(--pp-danger) !important;">Remove Setup</button>
         <div style="display: flex; gap: 16px; margin-left: auto;">
            <button class="pp-btn-outline" id="modal-close-btn">Close</button>
            <button class="pp-btn" id="modal-save-btn">Save Configuration</button>
@@ -827,7 +842,6 @@ export function renderSetup(container, state) {
   `;
 
   wizardContainer.appendChild(platformsGridContainer);
-  container.appendChild(header);
   container.appendChild(wizardContainer);
   document.body.appendChild(modalOverlay);
 
@@ -846,11 +860,8 @@ export function renderSetup(container, state) {
 
   const createGoogleEventRow = (eventData = { name: 'purchase', label: '' }) => {
     const row = document.createElement('div');
-    row.className = 'google-event-row';
-    row.style.display = 'grid';
-    row.style.gridTemplateColumns = '1fr 1fr auto';
+    row.className = 'google-event-row pp-setup-row';
     row.style.gap = '16px';
-    row.style.alignItems = 'center';
     row.style.background = 'rgba(0,0,0,0.02)';
     row.style.padding = '12px';
     row.style.borderRadius = '6px';
@@ -935,35 +946,173 @@ export function renderSetup(container, state) {
     });
   }
 
+  let metaPixelList = [];
+  if (metaConfig && Array.isArray(metaConfig.pixels) && metaConfig.pixels.length > 0) {
+    metaPixelList = JSON.parse(JSON.stringify(metaConfig.pixels));
+  } else if (metaConfig && (metaConfig.pixel_id || metaConfig.pixelId)) {
+    metaPixelList = [{
+      id: 'pixel_1',
+      pixelId: metaConfig.pixel_id || metaConfig.pixelId || '',
+      conversionsApiToken: metaConfig.capi_token || metaConfig.capiToken || '',
+      testEventCode: metaConfig.test_code || metaConfig.testCode || '',
+      setupType: (metaConfig.capi_token || metaConfig.capiToken) ? 'advanced' : 'basic'
+    }];
+  } else {
+    metaPixelList = [{ id: 'pixel_1', pixelId: '', conversionsApiToken: '', testEventCode: '', setupType: 'basic' }];
+  }
+
+  function syncMetaPixelListFromDOM() {
+    const containerEl = document.getElementById('meta-pixel-blocks-container');
+    if (!containerEl) return;
+    const blocks = containerEl.querySelectorAll('.meta-pixel-block');
+    blocks.forEach((block, idx) => {
+      if (!metaPixelList[idx]) {
+        metaPixelList[idx] = { id: 'pixel_' + (idx + 1) };
+      }
+      metaPixelList[idx].pixelId = block.querySelector('.meta-pixel-id-input')?.value.trim() || '';
+      metaPixelList[idx].setupType = block.querySelector(`input[name="meta_mode_${idx}"]:checked`)?.value || 'basic';
+      metaPixelList[idx].conversionsApiToken = block.querySelector('.meta-capi-token-input')?.value.trim() || '';
+      metaPixelList[idx].testEventCode = block.querySelector('.meta-test-code-input')?.value.trim() || '';
+    });
+  }
+
+  function renderMetaPixelBlocksUI() {
+    const containerEl = document.getElementById('meta-pixel-blocks-container');
+    if (!containerEl) return;
+    
+    containerEl.innerHTML = metaPixelList.map((p, idx) => {
+      const isAdvanced = p.setupType === 'advanced' || !!p.conversionsApiToken || !!p.capi_token;
+      return `
+        <div class="meta-pixel-block" data-index="${idx}" style="background: var(--pp-surface-light); border: 1px solid var(--pp-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--pp-border);">
+            <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--pp-text-main);">Meta Pixel Configuration #${idx + 1}</h4>
+            ${metaPixelList.length > 1 ? `
+              <button type="button" class="meta-btn-remove-pixel pp-btn pp-btn-danger" data-index="${idx}" style="padding: 6px 12px; font-size: 12px; background: var(--pp-danger); border: none; color: #fff; border-radius: 6px; cursor: pointer;">
+                Remove
+              </button>
+            ` : ''}
+          </div>
+          
+          <div class="setup-mode-toggle" style="display: flex; gap: 24px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--pp-border-light);">
+            <label class="pp-radio-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="meta_mode_${idx}" value="basic" ${!isAdvanced ? 'checked' : ''} style="accent-color: var(--pp-primary); width: 16px; height: 16px;">
+              <span style="font-size: 13px; color: var(--pp-text-main); font-weight: 500;">Basic Setup (Pixel Only)</span>
+            </label>
+            <label class="pp-radio-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="meta_mode_${idx}" value="advanced" ${isAdvanced ? 'checked' : ''} style="accent-color: var(--pp-primary); width: 16px; height: 16px;">
+              <span style="font-size: 13px; color: var(--pp-text-main); font-weight: 500;">Advanced Setup (Pixel + CAPI)</span>
+            </label>
+          </div>
+
+          <div class="config-fields">
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Meta Pixel ID <span style="color: var(--pp-danger);">*</span></label>
+              <input type="text" class="pp-input meta-pixel-id-input" value="${p.pixelId || p.pixel_id || ''}" placeholder="e.g. 123456789012345">
+            </div>
+            
+            <div class="meta-advanced-fields" style="display: ${isAdvanced ? 'block' : 'none'};">
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Conversions API Access Token <span style="color: var(--pp-danger);">*</span></label>
+                <textarea class="pp-input meta-capi-token-input" rows="3" placeholder="Paste your CAPI token here...">${p.conversionsApiToken || p.capi_token || ''}</textarea>
+              </div>
+              <div style="margin-bottom: 8px;">
+                <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--pp-text-main);">Test Event Code (Optional)</label>
+                <input type="text" class="pp-input meta-test-code-input" value="${p.testEventCode || p.test_code || ''}" placeholder="e.g. TEST12345">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach event listeners for radios
+    metaPixelList.forEach((_, idx) => {
+      const block = containerEl.querySelector(`.meta-pixel-block[data-index="${idx}"]`);
+      if (!block) return;
+      const radios = block.querySelectorAll(`input[name="meta_mode_${idx}"]`);
+      const advFields = block.querySelector('.meta-advanced-fields');
+      radios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          if (e.target.value === 'advanced') {
+            advFields.style.display = 'block';
+          } else {
+            advFields.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Attach remove event listeners
+    containerEl.querySelectorAll('.meta-btn-remove-pixel').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        syncMetaPixelListFromDOM();
+        const removeIdx = parseInt(e.currentTarget.dataset.index, 10);
+        metaPixelList.splice(removeIdx, 1);
+        renderMetaPixelBlocksUI();
+      });
+    });
+  }
+
   const openModal = (platform) => {
     activePlatform = platform;
     modalErrorMsg.style.display = 'none';
     
+    const preloader = modal.querySelector('#modal-preloader');
+    const modalBody = modal.querySelector('#modal-body');
+    const modalFooter = modal.querySelector('#modal-footer');
+    
+    // Hide content sections initially
+    modalBody.style.display = 'none';
+    modalBody.classList.remove('pp-fade-in-animate');
+    if (modalTabsContainer) {
+      modalTabsContainer.style.display = 'none';
+      modalTabsContainer.classList.remove('pp-fade-in-animate');
+    }
+    if (modalFooter) {
+      modalFooter.style.display = 'none';
+      modalFooter.classList.remove('pp-fade-in-animate');
+    }
+    
+    // Show preloader
+    if (preloader) preloader.style.display = 'flex';
+    
     // Hide all forms in modal
     modal.querySelectorAll('.platform-form').forEach(f => f.style.display = 'none');
     
-    // Setup modal specific data
-    const form = document.getElementById(`form-${platform}`);
+    // Setup modal specific data using scoped lookup
+    const form = modal.querySelector(`#form-${platform}`);
     if (form) form.style.display = 'block';
 
     if (platform === 'facebook') {
       modalTitle.innerHTML = `${icons.meta} Meta Pixel & CAPI Setup`;
-      if (modalTabsContainer) modalTabsContainer.style.display = 'block';
+      
+      renderMetaPixelBlocksUI();
+
+      const addBtn = modal.querySelector('#meta-btn-add-pixel');
+      if (addBtn && !addBtn.dataset.bound) {
+        addBtn.dataset.bound = 'true';
+        addBtn.addEventListener('click', () => {
+          syncMetaPixelListFromDOM();
+          metaPixelList.push({
+            id: 'pixel_' + (metaPixelList.length + 1),
+            pixelId: '',
+            conversionsApiToken: '',
+            testEventCode: '',
+            setupType: 'basic'
+          });
+          renderMetaPixelBlocksUI();
+        });
+      }
     } else if (platform === 'tiktok') {
       modalTitle.innerHTML = `${icons.tiktok} TikTok Events API Setup`;
-      if (modalTabsContainer) modalTabsContainer.style.display = 'block';
     } else if (platform === 'reddit') {
       modalTitle.innerHTML = `${icons.reddit} Reddit Pixel & CAPI Setup`;
-      if (modalTabsContainer) modalTabsContainer.style.display = 'block';
     } else if (platform === 'pinterest') {
       modalTitle.innerHTML = `${icons.pinterest} Pinterest Tag & CAPI Setup`;
-      if (modalTabsContainer) modalTabsContainer.style.display = 'block';
     } else if (platform === 'ga4') {
       modalTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--pp-primary);"><circle cx="12" cy="12" r="10"></circle><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg> Google Analytics 4 Setup`;
-      if (modalTabsContainer) modalTabsContainer.style.display = 'block';
     } else if (platform === 'google') {
       modalTitle.innerHTML = `${icons.google} Google Conversion Tracking Setup`;
-      if (modalTabsContainer) modalTabsContainer.style.display = 'none'; // No events control tab for google
     }
     
     // Reset tabs to Configuration
@@ -982,6 +1131,29 @@ export function renderSetup(container, state) {
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevent background scroll
+
+    // Reveal after simulated fetch delay for premium feel
+    setTimeout(() => {
+      if (preloader) preloader.style.display = 'none';
+      
+      modalBody.style.display = 'block';
+      modalBody.offsetHeight; // Reflow
+      modalBody.classList.add('pp-fade-in-animate');
+      
+      if (platform === 'facebook' || platform === 'tiktok' || platform === 'reddit' || platform === 'pinterest' || platform === 'ga4') {
+        if (modalTabsContainer) {
+          modalTabsContainer.style.display = 'block';
+          modalTabsContainer.offsetHeight; // Reflow
+          modalTabsContainer.classList.add('pp-fade-in-animate');
+        }
+      }
+      
+      if (modalFooter) {
+        modalFooter.style.display = 'flex';
+        modalFooter.offsetHeight; // Reflow
+        modalFooter.classList.add('pp-fade-in-animate');
+      }
+    }, 400);
   };
 
   const closeModal = () => {
@@ -1136,24 +1308,55 @@ export function renderSetup(container, state) {
     // Gather Data
     let data = {};
     if (platform === 'facebook') {
-      const mode = form.querySelector('input[name="meta_mode"]:checked').value;
-      data.pixelId = document.getElementById('meta-pixel-id').value.trim();
+      const containerEl = document.getElementById('meta-pixel-blocks-container');
+      const blocks = containerEl ? containerEl.querySelectorAll('.meta-pixel-block') : [];
+      const pixels = [];
+      let hasErr = false;
+
+      blocks.forEach((block, idx) => {
+        const pId = block.querySelector('.meta-pixel-id-input')?.value.trim() || '';
+        const mode = block.querySelector(`input[name="meta_mode_${idx}"]:checked`)?.value || 'basic';
+        const capiToken = block.querySelector('.meta-capi-token-input')?.value.trim() || '';
+        const testCode = block.querySelector('.meta-test-code-input')?.value.trim() || '';
+
+        if (!pId) {
+          showError(`Meta Pixel ID is required for Pixel #${idx + 1}.`);
+          hasErr = true;
+          return;
+        }
+        if (mode === 'advanced' && !capiToken) {
+          showError(`CAPI Access Token is required for Advanced Setup in Pixel #${idx + 1}.`);
+          hasErr = true;
+          return;
+        }
+
+        pixels.push({
+          id: 'pixel_' + (idx + 1),
+          pixelId: pId,
+          conversionsApiToken: mode === 'advanced' ? capiToken : '',
+          testEventCode: mode === 'advanced' ? testCode : '',
+          setupType: mode
+        });
+      });
+
+      if (hasErr) {
+        modalSaveBtn.innerText = originalText;
+        modalSaveBtn.disabled = false;
+        return;
+      }
+
+      if (pixels.length === 0) {
+        showError('At least one Meta Pixel configuration is required.');
+        modalSaveBtn.innerText = originalText;
+        modalSaveBtn.disabled = false;
+        return;
+      }
+
+      data.pixels = pixels;
+      data.pixelId = pixels[0].pixelId;
+      data.capiToken = pixels[0].conversionsApiToken;
+      data.testCode = pixels[0].testEventCode;
       data.events = getToggledEvents('facebook');
-      if (mode === 'advanced') {
-        data.capiToken = document.getElementById('meta-capi-token').value.trim();
-        data.testCode = document.getElementById('meta-test-code').value.trim();
-      } else {
-        data.capiToken = '';
-        data.testCode = '';
-      }
-      if (!data.pixelId) {
-        showError('Meta Pixel ID is required.');
-        return;
-      }
-      if (mode === 'advanced' && !data.capiToken) {
-        showError('CAPI Access Token is required for Advanced Setup.');
-        return;
-      }
     } else if (platform === 'tiktok') {
       const mode = form.querySelector('input[name="tiktok_mode"]:checked').value;
       data.pixelId = document.getElementById('tiktok-pixel-id').value.trim();
@@ -1298,16 +1501,22 @@ export function renderSetup(container, state) {
       if (result.success) {
         // Update Card in background UI
         const card = wizardContainer.querySelector(`.pp-setup-card[data-platform="${platform}"]`);
-        card.classList.add('saved-active');
-        card.querySelector('.status-badge').style.display = 'inline-flex';
-        card.querySelector('.platform-icon').style.color = 'var(--pp-success)';
-        card.style.borderColor = 'var(--pp-success)';
-        
-        const cardBtn = card.querySelector('.setup-card-btn');
-        cardBtn.style.background = 'transparent';
-        cardBtn.style.color = 'var(--pp-text-main)';
-        cardBtn.style.border = '1px solid var(--pp-border)';
-        cardBtn.innerHTML = icons.settings + ' Edit Configuration';
+        if (card) {
+          card.classList.add('saved-active');
+          const statusBadge = card.querySelector('.status-badge');
+          if (statusBadge) statusBadge.style.display = 'inline-flex';
+          const platformIcon = card.querySelector('.platform-icon');
+          if (platformIcon) platformIcon.style.color = 'var(--pp-success)';
+          card.style.borderColor = 'var(--pp-success)';
+          
+          const cardBtn = card.querySelector('.setup-card-btn');
+          if (cardBtn) {
+            cardBtn.style.background = 'transparent';
+            cardBtn.style.color = 'var(--pp-text-main)';
+            cardBtn.style.border = '1px solid var(--pp-border)';
+            cardBtn.innerHTML = icons.settings + ' Edit Configuration';
+          }
+        }
         
         // Update arrays safely
         if (!platformsSelected.includes(platform)) platformsSelected.push(platform);
@@ -1361,16 +1570,22 @@ export function renderSetup(container, state) {
       if (result.success) {
         // Update UI Card
         const card = wizardContainer.querySelector(`.pp-setup-card[data-platform="${platform}"]`);
-        card.classList.remove('saved-active');
-        card.querySelector('.status-badge').style.display = 'none';
-        card.querySelector('.platform-icon').style.color = 'var(--pp-text-muted)';
-        card.style.borderColor = 'var(--pp-border)';
-        
-        const cardBtn = card.querySelector('.setup-card-btn');
-        cardBtn.style.background = 'var(--pp-primary)';
-        cardBtn.style.color = 'white';
-        cardBtn.style.border = 'none';
-        cardBtn.innerHTML = 'Setup Now';
+        if (card) {
+          card.classList.remove('saved-active');
+          const statusBadge = card.querySelector('.status-badge');
+          if (statusBadge) statusBadge.style.display = 'none';
+          const platformIcon = card.querySelector('.platform-icon');
+          if (platformIcon) platformIcon.style.color = 'var(--pp-text-muted)';
+          card.style.borderColor = 'var(--pp-border)';
+          
+          const cardBtn = card.querySelector('.setup-card-btn');
+          if (cardBtn) {
+            cardBtn.style.background = 'var(--pp-primary)';
+            cardBtn.style.color = 'white';
+            cardBtn.style.border = 'none';
+            cardBtn.innerHTML = 'Setup Now';
+          }
+        }
         
         // Remove from array safely
         const idx = platformsSelected.indexOf(platform);

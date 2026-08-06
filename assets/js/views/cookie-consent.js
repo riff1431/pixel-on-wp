@@ -1,11 +1,4 @@
 export function renderCookieConsent(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>Cookie Consent v2 & Geo-Compliance Suite</h2>
-    <p>Advanced manual control over Geo-IP rules, script execution, and Consent Mode V2.</p>
-  `;
-
   const defaultConsent = {
     enabled: false,
     mode: 'strict', // strict, optout, notice, custom
@@ -50,16 +43,12 @@ export function renderCookieConsent(container, state) {
   if (!config.scripts) config.scripts = [];
 
   const dashboardGrid = document.createElement('div');
-  dashboardGrid.className = 'pp-grid-layout';
-  dashboardGrid.style.display = 'grid';
-  dashboardGrid.style.gridTemplateColumns = '250px 1fr';
-  dashboardGrid.style.gap = '24px';
+  dashboardGrid.className = 'pp-grid-sidebar-left';
   dashboardGrid.style.marginBottom = '40px';
 
   // Responsive logic
   const style = document.createElement('style');
   style.innerHTML = `
-    @media (max-width: 1024px) { .pp-grid-layout { grid-template-columns: 1fr !important; } }
     .cc-tab-menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
     .cc-tab-btn { padding: 12px 16px; background: transparent; border: 1px solid transparent; color: var(--pp-text-muted); text-align: left; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
     .cc-tab-btn:hover { background: rgba(255,255,255,0.05); color: var(--pp-text-main); }
@@ -69,7 +58,7 @@ export function renderCookieConsent(container, state) {
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     
     .pp-toggle { display: inline-flex; align-items: center; cursor: pointer; }
-    .pp-toggle-input { display: none; }
+    .pp-toggle-input { display: none !important; }
     .pp-toggle-slider { width: 44px; height: 24px; background-color: var(--pp-border); border-radius: 24px; position: relative; transition: 0.3s; }
     .pp-toggle-slider::before { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; background-color: white; top: 3px; left: 3px; transition: 0.3s; }
     .pp-toggle-input:checked + .pp-toggle-slider { background-color: var(--pp-primary); }
@@ -110,7 +99,7 @@ export function renderCookieConsent(container, state) {
           </label>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="pp-grid-2col" style="margin-bottom: 24px;">
           <div>
             <label style="display: block; margin-bottom: 6px; font-weight: 500;">Global Mode</label>
             <select id="cc_mode" class="pp-input">
@@ -172,7 +161,7 @@ export function renderCookieConsent(container, state) {
 
       <!-- TAB 4: Banner Studio -->
       <div id="tab-banner" class="cc-tab-content">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="pp-grid-2col">
           <div>
             <label style="display: block; margin-bottom: 6px; font-weight: 500;">Layout Engine</label>
             <select id="cc_b_layout" class="pp-input">
@@ -212,7 +201,7 @@ export function renderCookieConsent(container, state) {
             <input type="text" id="cc_b_btn_prefs" class="pp-input" value="${config.banner?.btn_prefs || ''}">
           </div>
           
-          <div style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--pp-border);">
+          <div class="pp-grid-2col" style="grid-column: span 2; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--pp-border);">
             <div style="grid-column: span 2;"><h4 style="margin: 0; color: var(--pp-text-main);">Preference Center Content</h4></div>
             
             <div style="grid-column: span 2;">
@@ -322,7 +311,6 @@ export function renderCookieConsent(container, state) {
 
   dashboardGrid.appendChild(sidebar);
   dashboardGrid.appendChild(contentArea);
-  container.appendChild(header);
   container.appendChild(dashboardGrid);
 
   // Tab switching logic
@@ -353,7 +341,7 @@ export function renderCookieConsent(container, state) {
       div.className = 'cc-repeater-row';
       div.innerHTML = `
         <button type="button" class="cc-repeater-remove" data-index="${index}">✖</button>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="pp-grid-2col" style="gap: 16px;">
           <div>
             <label style="display: block; margin-bottom: 4px; font-size: 12px;">Region Name</label>
             <input type="text" class="pp-input g-name" value="${rule.region_name || ''}" placeholder="e.g. European Union">
@@ -411,7 +399,7 @@ export function renderCookieConsent(container, state) {
       div.className = 'cc-repeater-row';
       div.innerHTML = `
         <button type="button" class="cc-repeater-remove" data-index="${index}">✖</button>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="pp-grid-2col" style="gap: 16px;">
           <div>
             <label style="display: block; margin-bottom: 4px; font-size: 12px;">Script Name</label>
             <input type="text" class="pp-input s-name" value="${script.name || ''}" placeholder="e.g. Custom Tracking Pixel">

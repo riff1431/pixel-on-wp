@@ -351,7 +351,19 @@ window.PixelOnWP.track = function (eventName, params = {}) {
       delete fbData.event;
       delete fbData.event_id;
 
-      fbq(fbType, fbEvent, fbData, { eventID: eventId });
+      const metaPixels = window.PixelOnWP_events?.meta_pixels || [];
+      const pixelIds = metaPixels.length > 0 
+        ? metaPixels.map(p => p.pixel_id || p.pixelId).filter(Boolean)
+        : [];
+
+      if (pixelIds.length > 0) {
+        const singleType = isStandard ? 'trackSingle' : 'trackSingleCustom';
+        pixelIds.forEach(pId => {
+          fbq(singleType, pId, fbEvent, fbData, { eventID: eventId });
+        });
+      } else {
+        fbq(fbType, fbEvent, fbData, { eventID: eventId });
+      }
     }
   }
 

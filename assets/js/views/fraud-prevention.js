@@ -25,13 +25,7 @@ export function renderFraudPrevention(container, state) {
 
   container.innerHTML = '';
 
-  // Header
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>Multi-Layer Fraud Prevention Engine</h2>
-    <p>Cascading fail-safe protection with 2 validation layers and courier API sync.</p>
-  `;
+
 
   // Tabs Navigation
   const tabsNav = document.createElement('div');
@@ -59,7 +53,6 @@ export function renderFraudPrevention(container, state) {
   contentArea.className = 'pp-card';
   contentArea.style.padding = '24px';
 
-  container.appendChild(header);
   container.appendChild(tabsNav);
   container.appendChild(contentArea);
 
@@ -110,7 +103,7 @@ function renderRulesTab(container, f) {
         <div><strong style="color: var(--pp-text-main);">Enable Layer 1</strong><br><span style="font-size: 12px; color: var(--pp-text-muted);">Phone length, dummy numbers, gibberish names.</span></div>
         <label class="pp-switch"><input type="checkbox" class="fraud-cfg-checkbox" data-key="enable_layer1" ${f.enable_layer1==='1'?'checked':''}><span class="pp-slider"></span></label>
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="pp-grid-2col" style="gap: 16px;">
         <div>
           <label class="pp-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--pp-text-main);">Phone Number Length (Digits)</label>
           <input type="number" class="pp-input fraud-cfg" data-key="phone_length" value="${f.phone_length}" min="7" max="15" style="width: 120px;">
@@ -159,7 +152,7 @@ function renderCourierTab(container, f) {
     <div style="display: grid; gap: 20px;">
       <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--pp-border-light); padding: 20px; border-radius: 8px;">
         <h4 style="margin: 0 0 12px 0; color: var(--pp-text-main); font-size: 14px;">Steadfast API</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="pp-grid-2col" style="gap: 12px;">
           <div><label class="pp-label" style="font-size: 13px;">API Key</label><input type="text" class="pp-input fraud-cfg" data-key="steadfast_key" value="${f.steadfast_key}" placeholder="Enter Steadfast API Key"></div>
           <div><label class="pp-label" style="font-size: 13px;">Secret Key</label><input type="text" class="pp-input fraud-cfg" data-key="steadfast_secret" value="${f.steadfast_secret}" placeholder="Enter Steadfast Secret Key"></div>
         </div>
@@ -167,7 +160,7 @@ function renderCourierTab(container, f) {
 
       <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--pp-border-light); padding: 20px; border-radius: 8px;">
         <h4 style="margin: 0 0 12px 0; color: var(--pp-text-main); font-size: 14px;">Pathao Courier API</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div class="pp-grid-2col" style="gap: 12px; margin-bottom: 16px;">
           <div><label class="pp-label" style="font-size: 13px;">Client ID</label><input type="text" class="pp-input fraud-cfg" data-key="pathao_client_id" value="${f.pathao_client_id || ''}" placeholder="Enter Client ID"></div>
           <div><label class="pp-label" style="font-size: 13px;">Client Secret</label><input type="text" class="pp-input fraud-cfg" data-key="pathao_client_secret" value="${f.pathao_client_secret || ''}" placeholder="Enter Client Secret"></div>
           <div><label class="pp-label" style="font-size: 13px;">Username (Email)</label><input type="text" class="pp-input fraud-cfg" data-key="pathao_username" value="${f.pathao_username || ''}" placeholder="test@pathao.com"></div>
@@ -410,7 +403,7 @@ function bindLookup(container, fSettings) {
             <span style="color: var(--pp-text-muted); font-size: 13px;">Results for:</span>
             <strong style="color: var(--pp-text-main); font-size: 18px; display: block;">${data.phone}</strong>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+          <div class="pp-grid-4col" style="gap: 16px; margin-bottom: 20px;">
             <div style="text-align: center;"><div style="font-size: 24px; font-weight: bold; color: var(--pp-text-main);">${data.total}</div><div style="font-size: 11px; color: var(--pp-text-muted); text-transform: uppercase;">Total</div></div>
             <div style="text-align: center;"><div style="font-size: 24px; font-weight: bold; color: var(--pp-success);">${data.success}</div><div style="font-size: 11px; color: var(--pp-text-muted); text-transform: uppercase;">Success</div></div>
             <div style="text-align: center;"><div style="font-size: 24px; font-weight: bold; color: var(--pp-danger);">${data.returned}</div><div style="font-size: 11px; color: var(--pp-text-muted); text-transform: uppercase;">Returned</div></div>

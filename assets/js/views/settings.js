@@ -25,13 +25,7 @@ export function renderSettings(container, state) {
   stickyHeader.style.background = 'var(--pp-surface)';
   
   stickyHeader.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-      <div>
-        <h2 style="margin:0 0 8px 0; font-size: 20px; font-weight: 600; color: var(--pp-text-main);">DataLayer Settings</h2>
-        <p style="margin:0; color: var(--pp-text-muted); font-size: 14px; max-width: 600px;">
-          Enable the eCommerce DataLayer to automatically push structured data to the frontend for Google Tag Manager and custom integrations.
-        </p>
-      </div>
+    <div style="display: flex; justify-content: flex-end; align-items: flex-start; margin-bottom: 24px;">
       <button id="btn-save-events" class="pp-btn" style="height: 40px; padding: 0 24px;">
         <span class="btn-text">Save Settings</span>
         <span class="btn-spinner pp-hidden">

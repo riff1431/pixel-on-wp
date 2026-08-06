@@ -50,7 +50,7 @@ export function renderFraudRadar(container, state) {
         overview.style.display = 'flex';
         document.getElementById('ai-safe-percent').innerText = `${json.data.safe_percentage}%`;
         document.getElementById('ai-suspicious-percent').innerText = `${json.data.suspicious_percentage}%`;
-        renderResults(json.data.flagged_ips, json.data.is_demo);
+        renderResults(json.data.flagged_ips);
       } else {
         resultsContainer.innerHTML = `<div style="color: var(--pp-text-muted); padding: 24px; background: rgba(0,0,0,0.02); border: 1px solid var(--pp-border); border-radius: 8px; text-align: center;">
           <div style="font-weight: 600; margin-bottom: 4px;">No traffic data available yet</div>
@@ -67,13 +67,8 @@ export function renderFraudRadar(container, state) {
     }
   };
 
-  const renderResults = (flaggedIps, isDemo = false) => {
+  const renderResults = (flaggedIps) => {
     const resultsContainer = document.getElementById('ai-fraud-results');
-    
-    let demoIndicator = '';
-    if (isDemo) {
-      demoIndicator = `<div style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-bottom: 16px;">🧪 DEMO DATA</div>`;
-    }
     
     if (!flaggedIps || flaggedIps.length === 0) {
       resultsContainer.innerHTML = `
@@ -86,7 +81,6 @@ export function renderFraudRadar(container, state) {
     }
 
     let tableHtml = `
-      ${demoIndicator}
       <h4 style="margin-top: 0;">Flagged IP Addresses</h4>
       <table style="width: 100%; border-collapse: collapse; text-align: left;">
         <thead>

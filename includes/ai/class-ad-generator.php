@@ -40,19 +40,49 @@ class PixelOnWP_Ad_Generator
         if (!class_exists('WooCommerce')) {
             $result = [];
             foreach ($dummy_products as $dp) {
-                $result[] = ['id' => $dp['id'], 'name' => $dp['name'], 'price' => '$' . $dp['price']];
+                $result[] = [
+                    'id' => $dp['id'],
+                    'name' => $dp['name'],
+                    'price' => '$' . $dp['price'],
+                    'image' => wc_placeholder_img_src('thumbnail')
+                ];
             }
             wp_send_json_success($result);
         }
 
+        $args = ['status' => 'publish', 'limit' => -1];
         $products = wc_get_products($args);
         $result = [];
 
         foreach ($products as $product) {
+            $image_id = $product->get_image_id();
+            $image_url = '';
+            if ($image_id) {
+                $src = wp_get_attachment_image_src($image_id, 'thumbnail');
+                if ($src && isset($src[0])) {
+                    $image_url = $src[0];
+                }
+            }
+            if (empty($image_url) && function_exists('wc_placeholder_img_src')) {
+                $image_url = wc_placeholder_img_src('thumbnail');
+            }
+            
+            // Clean title string: remove HTML, extra quotes, slashes, and artifacts
+            $raw_name = $product->get_name();
+            $clean_name = wp_strip_all_tags($raw_name);
+            $clean_name = str_replace(["'\" />", '" />', "'/>", '"/>', "'", '"'], '', $clean_name);
+            $clean_name = trim($clean_name);
+
+            // Clean price string: decode HTML entities (e.g. &#2547; or &nbsp;) into clean currency text
+            $raw_price = wc_price($product->get_price());
+            $clean_price = html_entity_decode(wp_strip_all_tags($raw_price), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $clean_price = trim(str_replace("\xc2\xa0", ' ', $clean_price));
+
             $result[] = [
                 'id' => $product->get_id(),
-                'name' => $product->get_name(),
-                'price' => wc_price($product->get_price())
+                'name' => $clean_name ?: 'Untitled Product',
+                'price' => $clean_price,
+                'image' => esc_url_raw($image_url)
             ];
         }
 
@@ -243,47 +273,23 @@ EOD;
         // Use AI Provider router
         $ai_json = PixelOnWP_AI_Provider::generate($prompt, 0.7);
 
-        if ($ai_json) {
+        if ($ai_json && !isset($ai_json['raw_text'])) {
             wp_send_json_success($ai_json);
         }
 
-        // AI failed — return dummy ad copy based on product name
-        $name = $product_data['name'];
-        $price = $product_data['price'];
+        // Active provider / API key invalid or failed — return explicit error
+        $status = PixelOnWP_AI_Provider::get_status();
+        $active = $status['active_provider'];
         
-        $dummy_response = [
-            'is_demo' => true,
-            'recommended_strategy' => "CARD HEADER\nPlatform: {$platform} Ads\nCampaign Objective: Conversions / Sales\nCampaign Type: Performance Max / DPA\nFunnel Stage: BOF (Bottom of Funnel)\nBusiness Type: E-commerce\nProduct Category: {$categories_str}\nBudget Range: \$50-\$100/day\n\nAUDIENCE\nTarget Audience: High-intent buyers interested in lifestyle upgrades.\nBroad/Interest/Lookalike: Broad + 1% Lookalike of Purchasers.\nCustom Audience: Website visitors (30 days).\nRetargeting Audience: Cart abandoners (7 days).\nAudience Exclusions: Past purchasers (30 days).\n\nCREATIVE STRATEGY\nCreative Format: Dynamic Product Ads (DPA) + Short-form Video\nHook Strategy: Problem-Solution pattern interrupt.\nStory Angle: Stop overpaying for inferior products.\nOffer Strategy: 10% off first purchase.\nCTA Strategy: Shop Now.\nUGC Strategy: Unboxing + Testimonial.\nCarousel Strategy: Highlight 3 core benefits.\nVideo Duration: 15-30s.\n\nAD COPY\nPrimary Text (Short): Upgrade your routine with {$name}. Only \${$price} today.\nPrimary Text (Medium): Stop settling for less. {$name} is engineered for peak performance and everyday reliability. Get yours for \${$price} plus free shipping!\nPrimary Text (Long): We all know the frustration of buying something that just doesn't last. That's exactly why we built {$name}. It's designed to deliver premium quality without the insane markup. Over 10,000 customers have already upgraded. Will you? Click to claim your exclusive \${$price} offer today.\nHeadlines (5 variations):\n1. 🔥 {$name} — Finally Back in Stock!\n2. The Ultimate Upgrade: {$name}\n3. Stop Overpaying. Try {$name} Today.\n4. Engineered for Perfection.\n5. Don't Miss Out: \${$price} Special.\nHooks (10 variations):\n1. You've been doing it wrong this whole time.\n2. Stop scrolling if you want to fix [problem].\n3. I can't believe I didn't buy this sooner.\n4. TikTok made me buy it and I have zero regrets.\n5. If you struggle with [Problem], you NEED this.\n6. Things in my room that just make sense.\n7. I tested the viral {$name} so you don't have to.\n8. Don't buy [competitor] until you see this.\n9. The secret to [benefit] is finally here.\n10. Why is everyone obsessed with this?\nCTA Variations (5 variations): Shop Now, Claim Offer, Get Yours, Discover More, Try Risk-Free.\n\nOPTIMIZATION & SCALING\nOptimization Goal: Maximize Conversions (Purchases).\nWinning Metrics: CPA < \$25, ROAS > 2.5x.\nPause Conditions: Spend > \$50 with 0 ATC.\nCreative Refresh Rules: Swap creatives every 14 days or if CTR drops below 1%.\nA/B Testing: Test 3 hooks against 1 winning body.\nHorizontal & Vertical Scaling: Increase budget by 20% every 2 days on winning ad sets. Duplicate winning ad sets to new broad audiences.\nBudget Rules: Start at \$50/day. Scale winners, kill losers fast.\n\nRETARGETING & TRACKING\nVideo Viewers: Retarget 50% video viewers.\nWebsite Visitors: Retarget 30-day visitors with a discount.\nATC: Retarget 7-day cart abandoners with urgency.\nIC: Retarget initiate checkout with social proof.\nExisting Customers: Upsell/Cross-sell after 30 days.\nMeta Pixel/CAPI/GA4/GTM/Server-side Tracking: Ensure all events are tracked accurately for maximum algorithm efficiency.\n\nKPI BENCHMARKS & PRO METRICS\nCPM: < \$15\nCTR: > 1.5%\nCPC: < \$1.00\nCPA: < \$25\nROAS: > 2.5x\nFrequency: 1.5 - 2.5\nCompetitor Analysis: High competition, differentiate on quality.\nSeasonality Impact: Evergreen product.\nAI Score (1-10): 9\nMarket Saturation: Moderate\nCreative Fatigue Score: Low (new campaign)\nRisk Analysis: Low risk with structured testing.\nExpected Learning Phase: 3-5 days.\nBudget Efficiency Score: High"
-        ];
-
-        if ($platform === 'meta') {
-            $meta_card = "CARD HEADER\nPlatform: Meta Ads\nCampaign Objective: Awareness\nCampaign Type: Reach / Brand Awareness\nFunnel Stage: TOF (Top of Funnel)\nBusiness Type: E-commerce\nProduct Category: {$categories_str}\nBudget Range: \$20-\$50/day\n\nAUDIENCE\nTarget Audience: Broad audience interested in lifestyle upgrades.\nBroad/Interest/Lookalike: Broad targeting only.\nCustom Audience: None.\nRetargeting Audience: None.\nAudience Exclusions: Past purchasers, Website visitors (30 days).\n\nCREATIVE STRATEGY\nCreative Format: High-quality Lifestyle Image / Short Video\nHook Strategy: Visually stunning product showcase.\nStory Angle: Introducing the new standard for {$name}.\nOffer Strategy: Brand positioning (No discount).\nCTA Strategy: Learn More.\nUGC Strategy: Aesthetic lifestyle integration.\nCarousel Strategy: Brand story and core values.\nVideo Duration: 6-15s.\n\nAD COPY\nPrimary Text (Short): Discover {$name}, the ultimate lifestyle upgrade.\nPrimary Text (Medium): Experience the difference with {$name}. Crafted for excellence and designed to elevate your everyday.\nPrimary Text (Long): (Detailed brand story introducing {$name}).\nHeadlines (5 variations): Meet {$name} | The New Standard | Upgrade Your Life | Experience Premium | Discover Excellence.\nHooks (10 variations): (Visually focused hooks capturing attention without aggressive selling).\nCTA Variations (5 variations): Learn More, See Details, Explore, Discover, Watch Video.\n\nOPTIMIZATION & SCALING\nOptimization Goal: Maximize Reach / Ad Recall Lift.\nWinning Metrics: CPM < \$5, Cost per ThruPlay < \$0.05.\nPause Conditions: Frequency > 3 without engagement.\nCreative Refresh Rules: Refresh creatives every 14 days to prevent fatigue.\nA/B Testing: Test image vs. video.\nHorizontal & Vertical Scaling: Broaden age targeting to lower CPM.\nBudget Rules: Keep budget steady for consistent brand presence.\n\nRETARGETING & TRACKING\nVideo Viewers: Build audience of 25%+ viewers for MOF/BOF campaigns.\nWebsite Visitors: Push engaged users to traffic/conversion campaigns.\nMeta Pixel/CAPI/GA4/GTM/Server-side Tracking: Track brand awareness lift.\n\nKPI BENCHMARKS & PRO METRICS\nCPM: < \$5\nCTR: > 0.5%\nCPC: < \$1.50\nAI Score (1-10): 8\nMarket Saturation: Low (Awareness)\nCreative Fatigue Score: Medium\nRisk Analysis: Low risk (cheap impressions).\nExpected Learning Phase: 1-2 days.\nBudget Efficiency Score: Moderate (Top of funnel investment).";
-            
-            $dummy_response['tof_cold'] = str_replace("Awareness", "TOF Cold Prospecting", $meta_card);
-            $dummy_response['mof_consideration'] = str_replace("Awareness", "MOF Consideration", $meta_card);
-            $dummy_response['bof_conversion'] = str_replace("Awareness", "BOF Conversion", $meta_card);
-            $dummy_response['retargeting'] = str_replace("Awareness", "Retargeting Recovery", $meta_card);
-            $dummy_response['flash_sale'] = str_replace("Awareness", "Flash Sale Urgency", $meta_card);
-            
-        } elseif ($platform === 'tiktok') {
-            $tiktok_card = "CARD HEADER\nPlatform: TikTok Ads\nCampaign Objective: Reach\nFunnel Stage: TOF (Top of Funnel)\nProduct Category: {$categories_str}\nBudget Range: \$30-\$60/day\n\nAUDIENCE & CREATIVE\nTarget Audience: Gen Z & Millennials.\nBroad/Interest/Lookalike/Retargeting: Broad targeting to let the algorithm optimize.\nCreative Type: Trending Audio UGC.\nCreator Style: Authentic, relatable, native TikTok vibe.\nSpark Ads: Yes, boost organic viral posts.\nStorytelling Angle: 'TikTok made me buy it'.\nProduct Demo: Fast-paced unboxing.\n\nVIDEO STRUCTURE (Second-by-Second)\nHook (0-3s): Disruptive visual + text overlay ('POV: You found the perfect {$name}').\nProblem (3-10s): Showing the struggle before the product.\nProduct Demo (10-20s): Fast cuts showing {$name} in action.\nBenefits (20-30s): Pointing to text bubbles with key features.\nSocial Proof (30-40s): Reaction shot or showing results.\nCTA (40-60s): 'Link in bio to get yours!'\n\nAD COPY\nCaption: I can't believe I lived without this! 😍 #{$name} #musthave\nShort Script: Stop scrolling! This is the {$name} and you need it.\nMedium Script: (Full 30s script focusing on the problem/solution dynamic).\nLong Script: (Detailed 60s storytelling script).\nHooks (10 variations): (Trending audio hooks, visual pattern interrupts).\nCTA Variations: Shop Now, Learn More, Get Yours.\n\nOPTIMIZATION & SCALING\nOptimization Goal: Maximize Reach.\nWinning Metrics: CPM < \$4, 3-Second View Rate > 30%.\nPause Conditions: 3-Second View Rate < 15%.\nCreative Refresh Rules: Refresh weekly due to fast TikTok fatigue.\nHorizontal/Vertical Scaling: Use Spark Ads on viral creator posts to scale quickly.\nBudget Rules: Test quickly, kill losers faster.\n\nRETARGETING & TRACKING\nVideo/Product Viewers: Retarget 6-second video viewers in a conversion campaign.\nTikTok Pixel/Events API/GA4/GTM/Server-side Tracking: Ensure TikTok Pixel is firing correctly.\n\nKPI BENCHMARKS & PRO METRICS\nCPM: < \$4\nCTR: > 1.0%\nAI Score (1-10): 9\nCreative Fatigue Score: High (TikTok native)\nExpected Learning Phase: 1-3 days.";
-            
-            $dummy_response['spark_ads'] = str_replace("Reach", "Spark Ads Amplification", $tiktok_card);
-            $dummy_response['in_feed_ugc'] = str_replace("Reach", "In-Feed Native UGC", $tiktok_card);
-            $dummy_response['pov_problem'] = str_replace("Reach", "POV Problem-Solver", $tiktok_card);
-            $dummy_response['before_after'] = str_replace("Reach", "Before & After Transformation", $tiktok_card);
-            $dummy_response['grwm'] = str_replace("Reach", "GRWM Product Integration", $tiktok_card);
-
-        } elseif ($platform === 'google') {
-            $google_card = "CARD HEADER\nPlatform: Google Ads\nCampaign Type: Search Campaign\nCampaign Objective: Leads / Sales\nFunnel Stage: MOF / BOF\nBusiness Type: E-commerce\nProduct Category: {$categories_str}\nBudget Range: \$50-\$150/day\n\nSEARCH INTENT\nIntent: Commercial / Transactional.\n\nKEYWORD STRATEGY\nHigh-intent: 'buy {$name}', '{$name} discount', 'best premium {$name}'.\nLong-tail: 'where to buy {$name} online with free shipping'.\nCompetitor: '[Competitor Brand] alternative'.\nBrand: '{$name} official site'.\nNegative Keywords: 'free', 'cheap', 'used', 'how to make'.\n\nCREATIVE / ASSETS\nHeadlines (15 variations): Buy {$name} Online | Only \${$price} Today | Fast & Free Shipping | Premium Quality Guaranteed | etc.\nDescriptions (4 variations): Experience the best with {$name}. Order today for fast shipping and a 30-day guarantee. Upgrade your lifestyle now.\nCallouts: Free Shipping, 30-Day Returns, Premium Quality, 24/7 Support.\nStructured Snippets: Types: Wireless, Ergonomic, Organic.\nSitelinks: Shop Now, Reviews, About Us, Contact.\nProduct Feed: Sync via Google Merchant Center.\nVideo Assets: N/A for Search.\n\nAUDIENCE & OPTIMIZATION\nAudience Signals: In-market for related categories.\nCustomer Match: Upload past purchasers list for exclusion.\nRemarketing: RLSA (Remarketing Lists for Search Ads) for past visitors.\nQuality Score: Aim for > 7/10 on core keywords.\nImpression Share: Target > 70% on Brand terms.\nCTR: Target > 5%.\nCPC: Target < \$2.00.\nCPA: Target < \$25.\nROAS: Target > 2.5x.\nSearch Term Report: Review weekly to add negative keywords.\nAsset Performance: Optimize based on 'Best' performing assets.\n\nSCALING, RETARGETING & TRACKING\nBudget/Bid Scaling: Increase Target CPA slightly to win more auctions when scaling.\nKeyword Expansion: Add converting search terms as exact match keywords.\nCart Abandoners: Retarget with higher bids (RLSA).\nPast Customers: N/A.\nGA4/GTM/Enhanced Conversions/Google Tag/Server-side Tracking: Ensure Enhanced Conversions are active for accurate measurement.\n\nLANDING PAGE & PRO METRICS\nHero Section: Clear H1 matching ad headline, high-quality product image.\nOffer: Prominent \${$price} and 'Free Shipping' banner.\nCTA: 'Add to Cart' above the fold.\nTrust Signals: 5-star reviews, secure checkout badges.\nFAQ: Address shipping and return policies.\nCompetitor Analysis: High search competition, differentiate on ad copy quality.\nAI Score (1-10): 9\nExpected Learning Phase: 5-7 days.";
-            
-            $dummy_response['pmax'] = str_replace("Search Campaign", "Performance Max (PMax)", $google_card);
-            $dummy_response['high_intent_search'] = str_replace("Search Campaign", "High-Intent Commercial Search", $google_card);
-            $dummy_response['shopping_campaign'] = str_replace("Search Campaign", "Shopping Campaign", $google_card);
-            $dummy_response['youtube_video'] = str_replace("Search Campaign", "YouTube In-Stream Video", $google_card);
-            $dummy_response['display_remarketing'] = str_replace("Search Campaign", "Display Remarketing", $google_card);
+        $error_msg = __('AI generation failed. ', 'pixel-on-wp');
+        if ($active === 'chatgpt') {
+            $error_msg .= __('Your OpenAI ChatGPT API key is invalid or quota exceeded. Please check your API configuration.', 'pixel-on-wp');
+        } elseif ($active === 'gemini') {
+            $error_msg .= __('Your Google Gemini API key is invalid or quota exceeded. Please check your API configuration.', 'pixel-on-wp');
+        } else {
+            $error_msg .= __('Inbuilt AI rate limit exceeded or service unavailable. Please configure your own API key in settings.', 'pixel-on-wp');
         }
 
-        wp_send_json_success($dummy_response);
+        wp_send_json_error(['message' => $error_msg, 'provider' => $active]);
     }
 }

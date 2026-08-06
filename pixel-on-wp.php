@@ -3,7 +3,7 @@
  * Plugin Name: PixelOnWP
  * Plugin URI: https://huipper.com
  * Description: Enterprise-grade server-side tracking, Meta Pixel, CAPI, GTM, GA4, DataLayer, and WooCommerce tracking suite for WordPress.
- * Version: 1.0.1
+ * Version: 1.0.3
  * Author: Huipper
  * Author URI: https://huipper.com
  * Text Domain: pixel-on-wp
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
  * Main plugin constants.
  */
 if (!defined('PixelOnWP_VERSION')) {
-  define('PixelOnWP_VERSION', '1.0.1');
+  define('PixelOnWP_VERSION', '1.0.3');
 }
 
 if (!defined('OMNITRACK_GEMINI_KEY')) {
@@ -127,6 +127,7 @@ final class PixelOnWP_Main
     require_once PixelOnWP_PATH . 'includes/class-loader.php';
     require_once PixelOnWP_PATH . 'includes/class-activator.php';
     require_once PixelOnWP_PATH . 'includes/class-deactivator.php';
+    require_once PixelOnWP_PATH . 'includes/class-tracker-support.php';
   }
 
   /**
@@ -263,6 +264,12 @@ final class PixelOnWP_Main
         $roas_ui = new \PixelOnWP\Admin\PixelOnWP_Roas_Admin_Ui();
         $roas_ui->register_hooks($loader);
       }
+      // Register Support Ticket System Manager
+      if (class_exists('\\PixelOnWP\\PixelOnWP_Tracker_Support')) {
+        $support_manager = new \PixelOnWP\PixelOnWP_Tracker_Support();
+        $support_manager->register_hooks($loader);
+      }
+
       // Register Auto Rules & Automation Engine
       if (class_exists('\\PixelOnWP\\Includes\\PixelOnWP_Auto_Rules_Engine')) {
         $auto_rules_engine = new \PixelOnWP\Includes\PixelOnWP_Auto_Rules_Engine();
@@ -363,17 +370,19 @@ final class PixelOnWP_Main
 
       $loader->run();
       
-      // TEMPORARY: Run dummy data generator if requested
+      // Clear dummy/demo data if it exists, and make sure we never generate it again
       add_action('admin_init', function() {
-          // Force re-run: delete old flag so it runs again with fixed code
-          if (get_option('pixelonwp_dummy_data_v2') !== '1') {
-              // Clear all AI caches
+          if (get_option('pixelonwp_dummy_data_v2') === '1') {
+              global $wpdb;
+              $table_name = $wpdb->prefix . 'pixelonwp_visitor_intelligence';
+              if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name) {
+                  $wpdb->query("TRUNCATE TABLE {$table_name}");
+              }
+              delete_option('pixelonwp_dummy_data_v2');
               delete_transient('pixelonwp_ai_insights_cache');
               delete_transient('pixelonwp_ai_search_demand_cache');
+              delete_transient('pixelonwp_ai_search_cache');
               delete_transient('pixelonwp_ai_fraud_cache');
-              
-              require_once plugin_dir_path(__FILE__) . 'includes/ai/generate-dummy-data.php';
-              update_option('pixelonwp_dummy_data_v2', '1');
           }
       });
     }

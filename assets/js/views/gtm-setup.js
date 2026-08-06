@@ -1,10 +1,4 @@
 export function renderGTMSetup(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>Google Tag Manager Setup</h2>
-    <p>Configure your GTM Container ID to automatically push eCommerce events to the dataLayer.</p>
-  `;
 
   const card = document.createElement('div');
   card.className = 'pp-card';
@@ -38,7 +32,6 @@ export function renderGTMSetup(container, state) {
     </button>
   `;
 
-  container.appendChild(header);
   container.appendChild(card);
 
   const btnSave = document.getElementById('btn-save-gtm');

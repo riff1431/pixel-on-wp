@@ -9,30 +9,104 @@ export function renderUniversalTracker(container, state) {
   const isGoogleConnected = !!globalConfig.google?.conversion_id;
   const isGa4Connected = !!globalConfig.ga4_id;
 
+  // Style injection for toggle switch
+  if (!document.getElementById('pp-toggle-switch-styles')) {
+    const styleTag = document.createElement('style');
+    styleTag.id = 'pp-toggle-switch-styles';
+    styleTag.innerHTML = `
+      .pp-toggle-switch input:checked + .pp-toggle-slider {
+        background-color: var(--pp-primary, #2563eb) !important;
+      }
+      .pp-toggle-switch input:checked + .pp-toggle-slider:before {
+        transform: translateX(22px);
+      }
+      .pp-toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      }
+    `;
+    document.head.appendChild(styleTag);
+  }
+
+  const visualBuilderEnabled = window.pixelonwp_admin_vars?.settings?.visual_builder_enabled !== '0';
+
   const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.style.display = 'flex';
-  header.style.justifyContent = 'space-between';
-  header.style.alignItems = 'center';
+  header.className = 'pp-view-header pp-universal-tracker-header';
   header.innerHTML = `
-    <div>
-      <h2>Universal Event & Parameter Tracker</h2>
-      <p>Configure advanced point-and-click or manual tracking rules mapped globally across active channels.</p>
+    <div class="pp-tracker-header-actions">
+      <div class="pp-live-inspector-badge">
+        <span class="pp-live-inspector-label">Live Inspector (Frontend):</span>
+        <label class="pp-toggle-switch">
+          <input type="checkbox" id="toggle-live-inspector" style="opacity: 0; width: 0; height: 0;" ${visualBuilderEnabled ? 'checked' : ''}>
+          <span class="pp-toggle-slider"></span>
+        </label>
+      </div>
+      <button id="btn-launch-visual-tool" class="pp-btn pp-btn-launch-visual">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Launch Visual Setup Tool</span>
+      </button>
     </div>
-    <button id="btn-launch-visual-tool" class="pp-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Launch Visual Setup Tool
-    </button>
   `;
   container.appendChild(header);
 
+  // Hook change listener for the toggle
+  const toggleInput = header.querySelector('#toggle-live-inspector');
+  if (toggleInput) {
+    toggleInput.addEventListener('change', () => {
+      const enabled = toggleInput.checked ? '1' : '0';
+      const formData = new FormData();
+      formData.append('action', 'PixelOnWP_toggle_live_debugger');
+      formData.append('nonce', window.pixelonwp_admin_vars.nonce);
+      formData.append('enabled', enabled);
+
+      fetch(window.pixelonwp_admin_vars.ajaxurl, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(res => {
+        if (res.success) {
+          showToast({
+            message: toggleInput.checked ? 'Live Inspector enabled on frontend.' : 'Live Inspector disabled on frontend.',
+            type: 'success',
+            title: 'Settings Updated'
+          });
+          if (window.pixelonwp_admin_vars.settings) {
+            window.pixelonwp_admin_vars.settings.visual_builder_enabled = enabled;
+          }
+        } else {
+          showToast({
+            message: 'Failed to update Live Inspector settings.',
+            type: 'error'
+          });
+          toggleInput.checked = !toggleInput.checked;
+        }
+      })
+      .catch(() => {
+        showToast({
+          message: 'Error communicating with server.',
+          type: 'error'
+        });
+        toggleInput.checked = !toggleInput.checked;
+      });
+    });
+  }
+
   // Tab Navigation Bar
   const navBar = document.createElement('div');
-  navBar.className = 'pp-tabs-container';
+  navBar.className = 'pp-tabs pp-tabs-container';
   navBar.style.marginBottom = '24px';
   navBar.innerHTML = `
-    <button class="pp-tab active" data-tab="rules" style="padding: 12px 24px; background: transparent; border: none; color: var(--pp-primary); border-bottom: 2px solid var(--pp-primary); font-weight: 600; cursor: pointer;">Event Rules</button>
-    <button class="pp-tab" data-tab="debugger" style="padding: 12px 24px; background: transparent; border: none; color: var(--pp-text-muted); font-weight: 500; cursor: pointer;">Live Event Debugger</button>
+    <button class="pp-tab active" data-tab="rules">Event Rules</button>
+    <button class="pp-tab" data-tab="debugger">Live Event Debugger</button>
   `;
   container.appendChild(navBar);
 
@@ -368,7 +442,7 @@ export function renderUniversalTracker(container, state) {
             <input type="text" id="mr-name" class="pp-input" value="${existingRule ? existingRule.name : ''}" placeholder="e.g. Add To Cart Button Click">
           </div>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="pp-grid-2col" style="gap: 16px;">
             <div>
               <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">Trigger Event</label>
               <select id="mr-trigger" class="pp-select">
@@ -384,7 +458,7 @@ export function renderUniversalTracker(container, state) {
             </div>
           </div>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="pp-grid-2col" style="gap: 16px;">
             <div>
               <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px;">URL Condition</label>
               <select id="mr-url-type" class="pp-select">
@@ -472,11 +546,8 @@ export function renderUniversalTracker(container, state) {
     
     const addParamRow = (key = '', valType = 'static', valSource = '') => {
       const row = document.createElement('div');
-      row.className = 'param-row';
-      row.style.display = 'grid';
-      row.style.gridTemplateColumns = '2fr 2fr 3fr auto';
+      row.className = 'param-row pp-param-row';
       row.style.gap = '8px';
-      row.style.alignItems = 'center';
       
       row.innerHTML = `
         <input type="text" class="param-key pp-input" value="${key}" placeholder="Key (e.g. value)">

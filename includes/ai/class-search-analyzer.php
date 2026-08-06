@@ -40,8 +40,7 @@ class PixelOnWP_Search_Analyzer
         $table_name = $wpdb->prefix . 'pixelonwp_visitor_intelligence';
 
         if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") !== $table_name) {
-            // Table not ready — return dummy data
-            wp_send_json_success($this->get_dummy_search_demand());
+            wp_send_json_error(['message' => 'No search demand data available yet.']);
         }
 
         $logs = $wpdb->get_results("SELECT activity_log FROM {$table_name} WHERE activity_log LIKE '%searches%' ORDER BY last_active DESC LIMIT 200", ARRAY_A);
@@ -59,7 +58,7 @@ class PixelOnWP_Search_Analyzer
         }
 
         if (empty($search_queries)) {
-            wp_send_json_success($this->get_dummy_search_demand());
+            wp_send_json_error(['message' => 'No search demand data available yet.']);
         }
 
         // Count frequencies
@@ -110,10 +109,8 @@ class PixelOnWP_Search_Analyzer
             wp_send_json_success($ai_json);
         }
 
-        // AI failed — return dummy data
-        $dummy = $this->get_dummy_search_demand();
-        set_transient('pixelonwp_ai_search_demand_cache', $dummy, 300);
-        wp_send_json_success($dummy);
+        // AI failed — return error
+        wp_send_json_error(['message' => 'AI search demand analysis failed.']);
     }
 
     /**

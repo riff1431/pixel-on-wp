@@ -1,24 +1,25 @@
-import { renderSidebar } from './components/sidebar.js?v=12';
-import { renderHeader } from './components/header.js?v=12';
-import { showToast } from './components/toaster.js?v=12';
-import { renderDashboard } from './views/dashboard.js?v=12';
-import { renderEvents } from './views/events.js?v=12';
-import { renderSetup } from './views/setup.js?v=12';
-import { renderSettings } from './views/settings.js?v=12';
-import { renderDiagnostics } from './views/diagnostics.js?v=12';
-import { renderLicense } from './views/license.js?v=12';
-import { renderServerSide } from './views/server-side.js?v=12';
-import { renderGTMSetup } from './views/gtm-setup.js?v=12';
-import { renderReset } from './views/reset.js?v=12';
-import { renderFraudPrevention } from './views/fraud-prevention.js?v=12';
-import { renderEcommerce } from './views/ecommerce.js?v=12';
-import { renderUTMBuilder } from './views/utm-builder.js?v=12';
-import { renderHeaderFooter } from './views/header-footer.js?v=12';
-import { renderCookieConsent } from './views/cookie-consent.js?v=12';
-import { renderAiEngine } from './views/ai-engine.js?v=12';
-import { renderUniversalTracker } from './views/universal-tracker.js?v=12';
-import { renderDocumentation } from './views/documentation.js?v=12';
-import { enhanceAllSelects } from './components/select.js?v=12';
+import { renderSidebar } from './components/sidebar.js?v=13';
+import { renderHeader } from './components/header.js?v=14';
+import { showToast } from './components/toaster.js?v=13';
+import { renderDashboard } from './views/dashboard.js?v=14';
+import { renderEvents } from './views/events.js?v=15';
+import { renderSetup } from './views/setup.js?v=13';
+import { renderSettings } from './views/settings.js?v=13';
+import { renderDiagnostics } from './views/diagnostics.js?v=13';
+import { renderLicense } from './views/license.js?v=14';
+import { renderServerSide } from './views/server-side.js?v=14';
+import { renderGTMSetup } from './views/gtm-setup.js?v=13';
+import { renderReset } from './views/reset.js?v=13';
+import { renderFraudPrevention } from './views/fraud-prevention.js?v=13';
+import { renderEcommerce } from './views/ecommerce.js?v=13';
+import { renderUTMBuilder } from './views/utm-builder.js?v=13';
+import { renderHeaderFooter } from './views/header-footer.js?v=13';
+import { renderCookieConsent } from './views/cookie-consent.js?v=13';
+import { renderAiEngine } from './views/ai-engine.js?v=13';
+import { renderUniversalTracker } from './views/universal-tracker.js?v=13';
+import { renderDocumentation } from './views/documentation.js?v=13';
+import { renderSupport } from './views/support.js?v=14';
+import { enhanceAllSelects } from './components/select.js?v=13';
 
 // Make toast available globally
 window.PixelOnWP_Toast = showToast;
@@ -220,6 +221,9 @@ export function navigate(fullViewId) {
         break;
       case 'documentation':
         renderDocumentation(main, state);
+        break;
+      case 'support':
+        renderSupport(main, state);
         break;
       case 'roas':
         window.location.href = 'admin.php?page=pixelonwp-roas';

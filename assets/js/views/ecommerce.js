@@ -13,22 +13,16 @@ export function renderEcommerce(container, state) {
 
   // Header
   const stickyHeader = document.createElement('div');
-  stickyHeader.className = 'pp-card';
-  stickyHeader.style.padding = '24px';
+  stickyHeader.className = 'pp-card pp-ecommerce-header';
+  stickyHeader.style.padding = '16px 24px';
   stickyHeader.style.marginBottom = '24px';
   stickyHeader.style.borderRadius = 'var(--pp-radius-md)';
   stickyHeader.style.border = '1px solid var(--pp-border)';
   stickyHeader.style.background = 'var(--pp-surface)';
   
   stickyHeader.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-      <div>
-        <h2 style="margin:0 0 8px 0; font-size: 20px; font-weight: 600; color: var(--pp-text-main);">eCommerce Tools</h2>
-        <p style="margin:0; color: var(--pp-text-muted); font-size: 14px; max-width: 600px;">
-          Manage eCommerce extensions and modular tools like WhatsApp Messaging.
-        </p>
-      </div>
-      <button id="btn-save-ecommerce" class="pp-btn" style="height: 40px; padding: 0 24px; background: var(--pp-primary); color: #fff; border: none; border-radius: var(--pp-radius-sm); cursor: pointer;">
+    <div class="pp-ecommerce-header-actions" style="display: flex; justify-content: flex-end; align-items: center;">
+      <button id="btn-save-ecommerce" class="pp-btn pp-btn-save-ecommerce" style="height: 40px; padding: 0 24px; background: var(--pp-primary); color: #fff; border: none; border-radius: var(--pp-radius-sm); cursor: pointer; font-weight: 600;">
         <span class="btn-text">Save Settings</span>
         <span class="btn-spinner pp-hidden" style="display: none;">
           Saving...
@@ -61,12 +55,12 @@ export function renderEcommerce(container, state) {
   waCard.style.borderRadius = 'var(--pp-radius-md)';
   
   waCard.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div class="pp-card-header-toggle" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px;">
       <div>
         <h3 style="margin: 0 0 4px 0; font-size: 18px; color: var(--pp-text-main);">WhatsApp Quick Order Messaging</h3>
         <p style="margin: 0; color: var(--pp-text-muted); font-size: 14px;">Enable quick WhatsApp messaging directly from WooCommerce Orders.</p>
       </div>
-      <label class="pp-switch" style="transform: scale(1.1); display: inline-block; position: relative; width: 40px; height: 24px;">
+      <label class="pp-switch" style="flex-shrink: 0; transform: scale(1.1); display: inline-block; position: relative; width: 40px; height: 24px;">
         <input type="checkbox" id="pp-wa-enable" ${isWaEnabled ? 'checked' : ''} style="opacity: 0; width: 0; height: 0;">
         <span class="pp-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
       </label>
@@ -132,7 +126,7 @@ export function renderEcommerce(container, state) {
         </select>
       </div>
       
-      <button id="btn-generate-feed" class="pp-btn" style="height: 40px; padding: 0 24px; background: #0f172a; color: #fff; border: none; border-radius: var(--pp-radius-sm); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      <button id="btn-generate-feed" class="pp-btn pp-btn-generate-feed" style="height: 40px; padding: 0 24px; background: #0f172a; color: #fff; border: none; border-radius: var(--pp-radius-sm); cursor: pointer; display: flex; align-items: center; gap: 8px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         <span class="btn-text">Generate & Download Feed</span>
         <span class="btn-spinner pp-hidden" style="display: none;">Generating...</span>

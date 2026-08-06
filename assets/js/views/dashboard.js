@@ -1,19 +1,23 @@
 import { showToast } from '../components/toaster.js';
+import { 
+  openMetaConfigModal, 
+  openTikTokConfigModal, 
+  openGA4ConfigModal, 
+  openGTMConfigModal 
+} from '../components/config-modals.js';
+
+window.openMetaConfigModal = openMetaConfigModal;
+window.openTikTokConfigModal = openTikTokConfigModal;
+window.openGA4ConfigModal = openGA4ConfigModal;
+window.openGTMConfigModal = openGTMConfigModal;
 
 export function renderDashboard(container, state) {
   let pollingInterval = null;
 
   const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.style.display = 'flex';
-  header.style.justifyContent = 'space-between';
-  header.style.alignItems = 'center';
+  header.className = 'pp-view-header pp-dashboard-header';
   header.innerHTML = `
-    <div>
-      <h2>PixelOnWP Intelligence</h2>
-      <p>Live metrics and synchronization status for Meta and TikTok Server-Side pipelines.</p>
-    </div>
-    <div style="display: flex; gap: 12px; align-items: center;">
+    <div class="pp-view-header-actions" style="display: flex; gap: 12px; align-items: center;">
       <span id="pp-dash-live-indicator" class="pp-badge pp-badge-success">Live</span>
       <button id="btn-clear-cache" class="pp-btn-outline" style="display: flex; align-items: center; gap: 6px;">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
@@ -24,16 +28,15 @@ export function renderDashboard(container, state) {
 
   // Status Cards
   const grid = document.createElement('div');
-  grid.className = 'pp-grid';
-  grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+  grid.className = 'pp-grid pp-dash-stats-grid';
 
   const renderCards = (data = null) => {
     grid.innerHTML = '';
     const cards = [
-      { id: 'server_events', title: 'Server Events (24h)', value: data ? data.server_events : '...', variant: 'pp-card-liquid-blue', icon: '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 15h18v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4z"/><path d="M12 12v3"/>' },
-      { id: 'match_rate', title: 'CAPI Match Rate', value: data ? data.match_rate : '...', variant: 'pp-card-liquid-primary', icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
-      { id: 'dedup', title: 'Deduplication', value: data ? data.deduplication : '100%', variant: 'pp-card-liquid-purple', icon: '<path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/>' },
-      { id: 'queue_fail', title: 'Queue Failures', value: data ? data.queue_failures : '...', variant: 'pp-card-liquid-amber', icon: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>' },
+      { id: 'server_events', title: 'Server Events (24h)', value: data ? data.server_events : '...', variant: 'pp-card-liquid-blue', animClass: 'pp-icon-anim-bounce', icon: '<rect x="2" y="3" width="20" height="8" rx="2" ry="2"/><rect x="2" y="13" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="7" x2="6.01" y2="7"/><line x1="6" y1="17" x2="6.01" y2="17"/><line x1="10" y1="7" x2="18" y2="7"/><line x1="10" y1="17" x2="18" y2="17"/>' },
+      { id: 'match_rate', title: 'CAPI Match Rate', value: data ? data.match_rate : '...', variant: 'pp-card-liquid-primary', animClass: 'pp-icon-anim-pulse', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>' },
+      { id: 'dedup', title: 'Deduplication', value: data ? data.deduplication : '100%', variant: 'pp-card-liquid-purple', animClass: 'pp-icon-anim-shake', icon: '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v3M11 18H8a2 2 0 0 1-2-2v-3"/>' },
+      { id: 'queue_fail', title: 'Queue Failures', value: data ? data.queue_failures : '...', variant: 'pp-card-liquid-amber', animClass: 'pp-icon-anim-rotate', icon: '<path d="m10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
     ];
 
     cards.forEach(card => {
@@ -43,7 +46,7 @@ export function renderDashboard(container, state) {
         <div class="pp-card-header">
           <div class="pp-card-title">
             <span class="pp-card-icon-pod">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${card.icon}</svg>
+              <svg class="${card.animClass}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${card.icon}</svg>
             </span>
             ${card.title}
           </div>
@@ -58,9 +61,7 @@ export function renderDashboard(container, state) {
 
   // Integrations Table & Queue Retry Widget
   const lowerGrid = document.createElement('div');
-  lowerGrid.style.display = 'grid';
-  lowerGrid.style.gridTemplateColumns = '2fr 1fr';
-  lowerGrid.style.gap = '20px';
+  lowerGrid.className = 'pp-lower-grid';
 
   // Metrics Table
   const tableCard = document.createElement('div');
@@ -124,9 +125,11 @@ export function renderDashboard(container, state) {
     let tbody = '';
     platforms.forEach(p => {
       const displayStatus = p.status === 'Inactive' ? 'Not Enabled' : p.status;
-      const btnAction = p.active 
-        ? `onclick="window.location.hash = 'setup'"` 
-        : `onclick="window.showDisabledConfigModal('${p.name.replace(/'/g, "\\'")}')"`;
+      let modalAction = `window.location.hash = 'setup'`;
+      if (p.id === 'meta') modalAction = `window.openMetaConfigModal()`;
+      else if (p.id === 'tiktok') modalAction = `window.openTikTokConfigModal()`;
+      else if (p.id === 'ga4') modalAction = `window.openGA4ConfigModal()`;
+      else if (p.id === 'gtm') modalAction = `window.openGTMConfigModal()`;
 
       tbody += `
         <tr>
@@ -138,7 +141,7 @@ export function renderDashboard(container, state) {
             </div>
           </td>
           <td style="padding: 12px 20px; text-align: right; border-bottom: 1px solid var(--pp-border-light);">
-            <button class="pp-btn-outline" ${btnAction}>Configure</button>
+            <button class="pp-btn-outline" onclick="${modalAction}">Configure</button>
           </td>
         </tr>
       `;
@@ -148,7 +151,7 @@ export function renderDashboard(container, state) {
       <div style="padding: 18px 24px; border-bottom: 1px solid var(--pp-border-light); background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px);">
         <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--pp-text-heading);">Integration Metrics</h3>
       </div>
-      <table style="width: 100%; border-collapse: collapse;">
+      <table class="pp-table pp-table-stacked-mobile" style="width: 100%; border-collapse: collapse;">
         <tbody>${tbody}</tbody>
       </table>
     `;
@@ -157,8 +160,7 @@ export function renderDashboard(container, state) {
 
   // Platform Performance Metrics Grid
   const platformGrid = document.createElement('div');
-  platformGrid.className = 'pp-grid';
-  platformGrid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+  platformGrid.className = 'pp-grid pp-platform-metrics-grid';
   platformGrid.style.marginTop = '20px';
   platformGrid.style.marginBottom = '20px';
 
@@ -271,7 +273,7 @@ export function renderDashboard(container, state) {
       <div class="pp-card-header">
         <div class="pp-card-title">
           <span class="pp-card-icon-pod">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            <svg class="pp-icon-anim-rotate" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
           </span>
           Background Queue
         </div>

@@ -31,7 +31,7 @@ class PixelOnWP_AI_Engine
         // AI API Configuration endpoints
         $loader->add_action('wp_ajax_pixelonwp_save_ai_api_keys', $this, 'save_ai_api_keys');
         $loader->add_action('wp_ajax_pixelonwp_get_ai_api_keys', $this, 'get_ai_api_keys');
-        $loader->add_action('wp_ajax_pixelonwp_clear_dummy_data', $this, 'clear_dummy_data');
+        $loader->add_action('wp_ajax_pixelonwp_set_active_provider', $this, 'set_active_provider');
     }
 
     public function sync_visitor_data(): void
@@ -125,10 +125,8 @@ class PixelOnWP_AI_Engine
 
         $recent_visitors = $wpdb->get_results("SELECT * FROM {$table_name} ORDER BY last_active DESC LIMIT 100", ARRAY_A);
 
-        // If no visitor data at all, return dummy with is_demo flag
         if (empty($recent_visitors)) {
-            $dummy = $this->get_dummy_insights(0);
-            wp_send_json_success($dummy);
+            wp_send_json_error(['message' => 'No visitor data available yet.']);
         }
 
         $active_count = 0;
@@ -170,10 +168,8 @@ class PixelOnWP_AI_Engine
             wp_send_json_success($ai_json);
         }
 
-        // All AI providers failed — return dummy data
-        $dummy = $this->get_dummy_insights($active_count, $is_dummy);
-        set_transient('pixelonwp_ai_insights_cache', $dummy, 60);
-        wp_send_json_success($dummy);
+        // All AI providers failed — return error
+        wp_send_json_error(['message' => 'AI insights generation failed.']);
     }
 
     /**
@@ -265,9 +261,9 @@ class PixelOnWP_AI_Engine
     }
 
     /**
-     * Clear dummy/demo data and reset to collect real data.
+     * Dynamically update active provider setting via AJAX.
      */
-    public function clear_dummy_data(): void
+    public function set_active_provider(): void
     {
         if (!current_user_can('manage_options')) {
             wp_send_json_error(['message' => 'Unauthorized']);
@@ -277,25 +273,26 @@ class PixelOnWP_AI_Engine
             wp_send_json_error(['message' => 'Invalid nonce']);
         }
 
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'pixelonwp_visitor_intelligence';
+        $active_provider = isset($_POST['active_provider']) ? sanitize_text_field(wp_unslash($_POST['active_provider'])) : 'inbuilt';
+        
+        if (in_array($active_provider, ['gemini', 'chatgpt', 'inbuilt'], true)) {
+            update_option('pixelonwp_active_provider', $active_provider);
+            
+            // Clear AI caches so fresh responses come from the new provider
+            delete_transient('pixelonwp_ai_insights_cache');
+            delete_transient('pixelonwp_ai_search_demand_cache');
+            delete_transient('pixelonwp_ai_fraud_cache');
 
-        // Truncate the visitor intelligence table
-        if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name) {
-            $wpdb->query("TRUNCATE TABLE {$table_name}");
+            wp_send_json_success([
+                'message' => 'Active provider updated successfully.',
+                'provider_status' => PixelOnWP_AI_Provider::get_status()
+            ]);
         }
 
-        // Delete dummy data flags so real data can accumulate
-        delete_option('pixelonwp_dummy_data_v2');
-
-        // Clear all AI caches
-        delete_transient('pixelonwp_ai_insights_cache');
-        delete_transient('pixelonwp_ai_search_demand_cache');
-        delete_transient('pixelonwp_ai_search_cache');
-        delete_transient('pixelonwp_ai_fraud_cache');
-
-        wp_send_json_success(['message' => 'Demo data cleared. Real data collection will now begin.']);
+        wp_send_json_error(['message' => 'Invalid provider selection.']);
     }
+
+
 
     private function get_client_ip(): string
     {

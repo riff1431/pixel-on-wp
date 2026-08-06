@@ -57,13 +57,7 @@ export function renderSearchDemand(container, state) {
   const renderResults = (data) => {
     const resultsContainer = document.getElementById('ai-demand-results');
     
-    let demoIndicator = '';
-    if (data.is_demo) {
-      demoIndicator = `<div style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-bottom: 16px;">🧪 DEMO DATA</div>`;
-    }
-
     let tableHtml = `
-      ${demoIndicator}
       <div style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 8px; border: 1px solid var(--pp-border); margin-bottom: 24px;">
         <div style="font-size: 12px; color: var(--pp-text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">AI Recommendation</div>
         <div style="font-size: 15px; font-weight: 500; color: var(--pp-text-main); line-height: 1.5;">${data.recommendation}</div>

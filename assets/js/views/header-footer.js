@@ -1,10 +1,4 @@
 export function renderHeaderFooter(container, state) {
-  const header = document.createElement('div');
-  header.className = 'pp-view-header';
-  header.innerHTML = `
-    <h2>Header & Footer Scripts</h2>
-    <p>Inject custom CSS, JavaScript, or verification tags globally across your website without editing theme files.</p>
-  `;
 
   const hfConfig = state.config?.config?.header_footer || {};
   const hfHeader = hfConfig.header || '';
@@ -54,8 +48,6 @@ export function renderHeaderFooter(container, state) {
   `;
 
   dashboardGrid.appendChild(configCard);
-  
-  container.appendChild(header);
   container.appendChild(dashboardGrid);
 
   // Set initial values

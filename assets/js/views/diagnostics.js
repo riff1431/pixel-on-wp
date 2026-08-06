@@ -9,11 +9,7 @@ export function renderDiagnostics(container, state) {
   const header = document.createElement('div');
   header.className = 'pp-view-header';
   header.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-      <div>
-        <h2>Diagnostics & Logs</h2>
-        <p>Monitor your active tracking events and payloads across all platforms.</p>
-      </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 16px; width: 100%;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <span id="pp-live-indicator" class="pp-badge success" style="animation: pulse 2s infinite;">Live Polling</span>
         <button id="btn-clear-diagnostics" class="pp-btn pp-btn-outline" style="color: var(--pp-danger); border-color: rgba(239, 68, 68, 0.3);">Clear Logs</button>
