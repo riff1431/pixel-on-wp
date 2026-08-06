@@ -31,49 +31,71 @@ class PixelOnWP_AI_Provider
      * @param int    $timeout     Request timeout in seconds.
      * @return array|null Parsed JSON response or null on failure.
      */
-    public static function generate(string $prompt, float $temperature = 0.4, bool $json_mode = true, int $timeout = 25): ?array
+    public static function generate(string $prompt, float $temperature = 0.4, bool $json_mode = true, int $timeout = 60): ?array
     {
         $active_provider = get_option('pixelonwp_active_provider', '');
         $user_gemini_key = get_option('pixelonwp_gemini_api_key', '');
         $user_chatgpt_key = get_option('pixelonwp_chatgpt_api_key', '');
+        $user_openrouter_key = get_option('pixelonwp_openrouter_api_key', '');
 
         if (empty($active_provider)) {
             if (!empty($user_gemini_key)) {
                 $active_provider = 'gemini';
             } elseif (!empty($user_chatgpt_key)) {
                 $active_provider = 'chatgpt';
+            } elseif (!empty($user_openrouter_key)) {
+                $active_provider = 'openrouter';
             } else {
                 $active_provider = 'inbuilt';
             }
         }
 
-        // 1. Try user-provided Gemini key if active
-        if ($active_provider === 'gemini') {
-            if (!empty($user_gemini_key)) {
-                $result = PixelOnWP_Gemini_Client::generate_with_key($user_gemini_key, $prompt, $temperature, $json_mode, $timeout);
-                if ($result && !isset($result['raw_text'])) {
-                    return $result;
-                }
+        // 1. Try active provider first
+        if ($active_provider === 'gemini' && !empty($user_gemini_key)) {
+            $result = PixelOnWP_Gemini_Client::generate_with_key($user_gemini_key, $prompt, $temperature, $json_mode, $timeout);
+            if ($result) {
+                return $result;
+            }
+        } elseif ($active_provider === 'chatgpt' && PixelOnWP_ChatGPT_Client::is_available()) {
+            $result = PixelOnWP_ChatGPT_Client::generate($prompt, $temperature, $json_mode, $timeout);
+            if ($result) {
+                return $result;
+            }
+        } elseif ($active_provider === 'openrouter' && PixelOnWP_OpenRouter_Client::is_available()) {
+            $result = PixelOnWP_OpenRouter_Client::generate($prompt, $temperature, $json_mode, $timeout);
+            if ($result) {
+                return $result;
             }
         }
 
-        // 2. Try user-provided ChatGPT key if active
-        if ($active_provider === 'chatgpt') {
-            if (PixelOnWP_ChatGPT_Client::is_available()) {
-                $result = PixelOnWP_ChatGPT_Client::generate($prompt, $temperature, $json_mode, $timeout);
-                if ($result && !isset($result['raw_text'])) {
-                    return $result;
-                }
+        // 2. Fallbacks to other configured user keys
+        if ($active_provider !== 'chatgpt' && PixelOnWP_ChatGPT_Client::is_available()) {
+            $result = PixelOnWP_ChatGPT_Client::generate($prompt, $temperature, $json_mode, $timeout);
+            if ($result) {
+                return $result;
             }
         }
 
-        // 3. Try inbuilt Gemini keys (fallback or active)
+        if ($active_provider !== 'gemini' && !empty($user_gemini_key)) {
+            $result = PixelOnWP_Gemini_Client::generate_with_key($user_gemini_key, $prompt, $temperature, $json_mode, $timeout);
+            if ($result) {
+                return $result;
+            }
+        }
+
+        if ($active_provider !== 'openrouter' && PixelOnWP_OpenRouter_Client::is_available()) {
+            $result = PixelOnWP_OpenRouter_Client::generate($prompt, $temperature, $json_mode, $timeout);
+            if ($result) {
+                return $result;
+            }
+        }
+
+        // 3. Fallback to inbuilt Gemini system keys
         $result = PixelOnWP_Gemini_Client::generate($prompt, $temperature, $json_mode, $timeout);
-        if ($result && !isset($result['raw_text'])) {
+        if ($result) {
             return $result;
         }
 
-        // 4. All providers failed — return null
         return null;
     }
 
@@ -86,6 +108,7 @@ class PixelOnWP_AI_Provider
     {
         $user_gemini = get_option('pixelonwp_gemini_api_key', '');
         $user_chatgpt = get_option('pixelonwp_chatgpt_api_key', '');
+        $user_openrouter = get_option('pixelonwp_openrouter_api_key', '');
         
         $active_provider = get_option('pixelonwp_active_provider', '');
         if (empty($active_provider)) {
@@ -93,6 +116,8 @@ class PixelOnWP_AI_Provider
                 $active_provider = 'gemini';
             } elseif (!empty($user_chatgpt)) {
                 $active_provider = 'chatgpt';
+            } elseif (!empty($user_openrouter)) {
+                $active_provider = 'openrouter';
             } else {
                 $active_provider = 'inbuilt';
             }
@@ -103,11 +128,14 @@ class PixelOnWP_AI_Provider
             $active_provider = 'inbuilt';
         } elseif ($active_provider === 'chatgpt' && empty($user_chatgpt)) {
             $active_provider = 'inbuilt';
+        } elseif ($active_provider === 'openrouter' && empty($user_openrouter)) {
+            $active_provider = 'inbuilt';
         }
 
         return [
             'gemini_configured' => !empty($user_gemini),
             'chatgpt_configured' => !empty($user_chatgpt),
+            'openrouter_configured' => !empty($user_openrouter),
             'inbuilt_available' => true, // Always available (may be rate-limited)
             'active_provider' => $active_provider,
         ];

@@ -68,7 +68,8 @@ export function renderAiEngine(container, state) {
     <p style="color: var(--pp-text-muted); font-size: 13px; margin-bottom: 24px; line-height: 1.5;">
       Configure your own API keys for better performance and no rate limits. Toggle a provider to activate it.
     </p>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
       <!-- Gemini API Key -->
       <div style="background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--pp-border);">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
@@ -85,7 +86,9 @@ export function renderAiEngine(container, state) {
           </label>
         </div>
         <input type="text" id="ai-gemini-key" placeholder="Enter your Gemini API Key" style="width: 100%; padding: 10px 14px; border: 1px solid var(--pp-border); border-radius: 8px; background: var(--pp-surface); color: var(--pp-text-main); font-size: 13px; box-sizing: border-box; margin-bottom: 12px;">
-        <div style="font-size: 11px; color: var(--pp-text-muted); margin-bottom: 4px;">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank" style="color: var(--pp-primary);">Google AI Studio</a></div>
+        <div style="font-size: 11px; color: var(--pp-text-muted); margin-bottom: 16px;">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank" style="color: var(--pp-primary);">Google AI Studio</a></div>
+        <button class="pp-btn-outline pp-btn-sm btn-test-connection" data-provider="gemini">Test Connection</button>
+        <div id="test-feedback-gemini" style="margin-top: 8px; font-size: 11px; display: none; line-height: 1.4;"></div>
       </div>
       <!-- ChatGPT API Key -->
       <div style="background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--pp-border);">
@@ -103,7 +106,29 @@ export function renderAiEngine(container, state) {
           </label>
         </div>
         <input type="text" id="ai-chatgpt-key" placeholder="Enter your OpenAI API Key (sk-...)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--pp-border); border-radius: 8px; background: var(--pp-surface); color: var(--pp-text-main); font-size: 13px; box-sizing: border-box; margin-bottom: 12px;">
-        <div style="font-size: 11px; color: var(--pp-text-muted); margin-bottom: 4px;">Get your key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--pp-primary);">OpenAI Dashboard</a></div>
+        <div style="font-size: 11px; color: var(--pp-text-muted); margin-bottom: 16px;">Get your key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--pp-primary);">OpenAI Dashboard</a></div>
+        <button class="pp-btn-outline pp-btn-sm btn-test-connection" data-provider="chatgpt">Test Connection</button>
+        <div id="test-feedback-chatgpt" style="margin-top: 8px; font-size: 11px; display: none; line-height: 1.4;"></div>
+      </div>
+      <!-- OpenRouter API Key -->
+      <div style="background: rgba(0,0,0,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--pp-border);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+          <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--pp-text-main);">OpenRouter API</div>
+            <div style="font-size: 11px; color: var(--pp-text-muted);">Llama 3 — Completely Free tier</div>
+          </div>
+          <label class="pp-switch" style="margin-left: auto; position: relative; display: inline-block; width: 42px; height: 22px;">
+            <input type="checkbox" id="openrouter-active-toggle" style="opacity: 0; width: 0; height: 0;">
+            <span class="pp-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px;"></span>
+          </label>
+        </div>
+        <input type="text" id="ai-openrouter-key" placeholder="Enter your OpenRouter Key (sk-or-...)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--pp-border); border-radius: 8px; background: var(--pp-surface); color: var(--pp-text-main); font-size: 13px; box-sizing: border-box; margin-bottom: 12px;">
+        <div style="font-size: 11px; color: var(--pp-text-muted); margin-bottom: 16px;">Get your key from <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--pp-primary);">OpenRouter Dashboard</a></div>
+        <button class="pp-btn-outline pp-btn-sm btn-test-connection" data-provider="openrouter">Test Connection</button>
+        <div id="test-feedback-openrouter" style="margin-top: 8px; font-size: 11px; display: none; line-height: 1.4;"></div>
       </div>
     </div>
     <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end;">
@@ -365,6 +390,7 @@ export function renderAiEngine(container, state) {
     const btn = document.getElementById('btn-save-api-keys');
     const geminiKey = document.getElementById('ai-gemini-key').value.trim();
     const chatgptKey = document.getElementById('ai-chatgpt-key').value.trim();
+    const openrouterKey = document.getElementById('ai-openrouter-key').value.trim();
     const msgEl = document.getElementById('api-save-message');
 
     btn.innerText = 'Saving...';
@@ -375,6 +401,7 @@ export function renderAiEngine(container, state) {
     formData.append('nonce', window.pixelonwp_admin_vars.nonce);
     formData.append('gemini_key', geminiKey);
     formData.append('chatgpt_key', chatgptKey);
+    formData.append('openrouter_key', openrouterKey);
 
     try {
       const res = await fetch(window.pixelonwp_admin_vars.ajaxurl, { method: 'POST', body: formData });
@@ -387,7 +414,7 @@ export function renderAiEngine(container, state) {
         msgEl.style.color = 'var(--pp-success)';
         msgEl.innerHTML = '✅ API keys saved! AI insights will refresh with your provider.';
 
-        // Update status dots
+        // Simply update provider statuses
         updateProviderStatus(json.data.provider_status);
 
         setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
@@ -405,8 +432,45 @@ export function renderAiEngine(container, state) {
       btn.disabled = false;
     }
   });
+  // Test Provider Connections
+  document.querySelectorAll('.btn-test-connection').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const provider = e.target.getAttribute('data-provider');
+      const inputEl = document.getElementById(`ai-${provider}-key`);
+      const feedbackEl = document.getElementById(`test-feedback-${provider}`);
+      const apiKey = inputEl ? inputEl.value.trim() : '';
 
+      // Clear previous feedback
+      feedbackEl.style.display = 'block';
+      feedbackEl.style.color = 'var(--pp-text-muted)';
+      feedbackEl.innerText = 'Testing connection...';
+      e.target.disabled = true;
 
+      const formData = new FormData();
+      formData.append('action', 'pixelonwp_test_ai_connection');
+      formData.append('nonce', window.pixelonwp_admin_vars.nonce);
+      formData.append('provider', provider);
+      formData.append('api_key', apiKey);
+
+      try {
+        const res = await fetch(window.pixelonwp_admin_vars.ajaxurl, { method: 'POST', body: formData });
+        const json = await res.json();
+
+        if (json.success) {
+          feedbackEl.style.color = 'var(--pp-success)';
+          feedbackEl.innerText = `✅ Success! Response: "${json.data.response}"`;
+        } else {
+          feedbackEl.style.color = 'var(--pp-danger)';
+          feedbackEl.innerText = `❌ Error: ${json.data.message}`;
+        }
+      } catch (err) {
+        feedbackEl.style.color = 'var(--pp-danger)';
+        feedbackEl.innerText = '❌ Request failed. Please check network settings.';
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+  });
 
   // Load API keys from backend
   const loadApiKeys = async () => {
@@ -421,6 +485,7 @@ export function renderAiEngine(container, state) {
       if (json.success && json.data) {
         document.getElementById('ai-gemini-key').value = json.data.gemini_key || '';
         document.getElementById('ai-chatgpt-key').value = json.data.chatgpt_key || '';
+        document.getElementById('ai-openrouter-key').value = json.data.openrouter_key || '';
         updateProviderStatus(json.data.provider_status);
       }
     } catch (e) {
@@ -433,8 +498,10 @@ export function renderAiEngine(container, state) {
 
     const geminiToggle = document.getElementById('gemini-active-toggle');
     const chatgptToggle = document.getElementById('chatgpt-active-toggle');
+    const openrouterToggle = document.getElementById('openrouter-active-toggle');
     const geminiInput = document.getElementById('ai-gemini-key');
     const chatgptInput = document.getElementById('ai-chatgpt-key');
+    const openrouterInput = document.getElementById('ai-openrouter-key');
     const badge = document.getElementById('ai-active-provider-badge');
 
     if (geminiToggle) {
@@ -443,18 +510,25 @@ export function renderAiEngine(container, state) {
     if (chatgptToggle) {
       chatgptToggle.checked = status.chatgpt_configured && status.active_provider === 'chatgpt';
     }
+    if (openrouterToggle) {
+      openrouterToggle.checked = status.openrouter_configured && status.active_provider === 'openrouter';
+    }
 
     if (geminiInput) {
-      geminiInput.disabled = status.active_provider === 'chatgpt';
+      geminiInput.disabled = (status.active_provider !== 'gemini' && status.active_provider !== 'inbuilt');
     }
     if (chatgptInput) {
-      chatgptInput.disabled = status.active_provider === 'gemini';
+      chatgptInput.disabled = (status.active_provider !== 'chatgpt');
+    }
+    if (openrouterInput) {
+      openrouterInput.disabled = (status.active_provider !== 'openrouter');
     }
 
     if (badge) {
       const providerLabels = {
         'gemini': '🟢 Using: Your Gemini API',
         'chatgpt': '🟢 Using: Your ChatGPT API',
+        'openrouter': '🟢 Using: OpenRouter Free API',
         'inbuilt': '🔵 Using: Inbuilt System'
       };
       badge.innerHTML = providerLabels[status.active_provider] || '🔵 Using: Inbuilt';
@@ -478,7 +552,8 @@ export function renderAiEngine(container, state) {
         msgEl.style.background = 'rgba(34, 197, 94, 0.1)';
         msgEl.style.border = '1px solid rgba(34, 197, 94, 0.3)';
         msgEl.style.color = 'var(--pp-success)';
-        msgEl.innerHTML = `✅ Active provider set to ${provider === 'inbuilt' ? 'Inbuilt System' : (provider === 'gemini' ? 'Google Gemini' : 'OpenAI ChatGPT')}.`;
+        const providerName = provider === 'inbuilt' ? 'Inbuilt System' : (provider === 'gemini' ? 'Google Gemini' : (provider === 'openrouter' ? 'OpenRouter Free AI' : 'OpenAI ChatGPT'));
+        msgEl.innerHTML = `✅ Active provider set to ${providerName}.`;
         setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
       }
     } catch (e) {
@@ -501,17 +576,22 @@ export function renderAiEngine(container, state) {
     }
 
     const chatgptToggle = document.getElementById('chatgpt-active-toggle');
+    const openrouterToggle = document.getElementById('openrouter-active-toggle');
     const geminiInput = document.getElementById('ai-gemini-key');
     const chatgptInput = document.getElementById('ai-chatgpt-key');
+    const openrouterInput = document.getElementById('ai-openrouter-key');
 
     if (e.target.checked) {
       if (chatgptToggle) chatgptToggle.checked = false;
+      if (openrouterToggle) openrouterToggle.checked = false;
       if (chatgptInput) chatgptInput.disabled = true;
+      if (openrouterInput) openrouterInput.disabled = true;
       if (geminiInput) geminiInput.disabled = false;
       setActiveProvider('gemini');
     } else {
       if (chatgptInput) chatgptInput.disabled = false;
       if (geminiInput) geminiInput.disabled = false;
+      if (openrouterInput) openrouterInput.disabled = false;
       setActiveProvider('inbuilt');
     }
   });
@@ -531,17 +611,57 @@ export function renderAiEngine(container, state) {
     }
 
     const geminiToggle = document.getElementById('gemini-active-toggle');
+    const openrouterToggle = document.getElementById('openrouter-active-toggle');
     const geminiInput = document.getElementById('ai-gemini-key');
     const chatgptInput = document.getElementById('ai-chatgpt-key');
+    const openrouterInput = document.getElementById('ai-openrouter-key');
 
     if (e.target.checked) {
       if (geminiToggle) geminiToggle.checked = false;
+      if (openrouterToggle) openrouterToggle.checked = false;
       if (geminiInput) geminiInput.disabled = true;
+      if (openrouterInput) openrouterInput.disabled = true;
       if (chatgptInput) chatgptInput.disabled = false;
       setActiveProvider('chatgpt');
     } else {
       if (geminiInput) geminiInput.disabled = false;
       if (chatgptInput) chatgptInput.disabled = false;
+      if (openrouterInput) openrouterInput.disabled = false;
+      setActiveProvider('inbuilt');
+    }
+  });
+
+  document.getElementById('openrouter-active-toggle').addEventListener('change', (e) => {
+    const openrouterKey = document.getElementById('ai-openrouter-key').value.trim();
+    if (e.target.checked && !openrouterKey) {
+      e.target.checked = false;
+      const msgEl = document.getElementById('api-save-message');
+      msgEl.style.display = 'block';
+      msgEl.style.background = 'rgba(239, 68, 68, 0.1)';
+      msgEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      msgEl.style.color = 'var(--pp-danger)';
+      msgEl.innerHTML = '❌ Please enter and save OpenRouter API key first.';
+      setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+      return;
+    }
+
+    const geminiToggle = document.getElementById('gemini-active-toggle');
+    const chatgptToggle = document.getElementById('chatgpt-active-toggle');
+    const geminiInput = document.getElementById('ai-gemini-key');
+    const chatgptInput = document.getElementById('ai-chatgpt-key');
+    const openrouterInput = document.getElementById('ai-openrouter-key');
+
+    if (e.target.checked) {
+      if (geminiToggle) geminiToggle.checked = false;
+      if (chatgptToggle) chatgptToggle.checked = false;
+      if (geminiInput) geminiInput.disabled = true;
+      if (chatgptInput) chatgptInput.disabled = true;
+      if (openrouterInput) openrouterInput.disabled = false;
+      setActiveProvider('openrouter');
+    } else {
+      if (geminiInput) geminiInput.disabled = false;
+      if (chatgptInput) chatgptInput.disabled = false;
+      if (openrouterInput) openrouterInput.disabled = false;
       setActiveProvider('inbuilt');
     }
   });

@@ -193,6 +193,59 @@ export function renderCampaignBuilder(container, state) {
       currentRegenCount++;
     }
 
+    // Show Loading Modal
+    let modal = document.getElementById('ai-generation-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'ai-generation-modal';
+      modal.style.cssText = 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 99999; animation: fadeIn 0.25s ease;';
+      modal.innerHTML = `
+        <div style="background: var(--pp-surface, #ffffff); border: 1px solid var(--pp-border, #f1f5f9); border-radius: 20px; padding: 36px 32px; width: 90%; max-width: 440px; box-shadow: 0 20px 40px -15px rgba(225, 29, 72, 0.2), 0 0 0 1px rgba(225, 29, 72, 0.05); text-align: center; font-family: inherit;">
+          <div style="position: relative; width: 64px; height: 64px; margin: 0 auto 20px; border-radius: 50%; background: var(--pp-primary-light, #fff1f2); display: flex; align-items: center; justify-content: center; color: var(--pp-primary, #e11d48); box-shadow: 0 0 20px rgba(225, 29, 72, 0.15);">
+            <svg style="width: 32px; height: 32px; animation: spin 1.2s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="10"></circle></svg>
+            <span style="position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--pp-primary, #e11d48); opacity: 0.3; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+          </div>
+          <h3 id="ai-modal-title" style="margin: 0 0 8px 0; font-size: 19px; font-weight: 700; color: var(--pp-text-main, #0f172a); letter-spacing: -0.3px;">Generating AI Ad Campaign</h3>
+          <p id="ai-modal-subtitle" style="margin: 0 0 24px 0; font-size: 13px; color: var(--pp-text-muted, #64748b); line-height: 1.5;">Analyzing product features, buyer psychology & direct-response angles...</p>
+          
+          <div style="background: rgba(0, 0, 0, 0.04); height: 8px; border-radius: 10px; overflow: hidden; margin-bottom: 14px; position: relative; padding: 1px;">
+            <div id="ai-modal-progress" style="width: 15%; height: 100%; background: var(--pp-primary-gradient, linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #d946ef 100%)); border-radius: 10px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);"></div>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--pp-text-muted, #64748b); font-weight: 600;">
+            <span id="ai-modal-status">Initializing AI model...</span>
+            <span id="ai-modal-percent" style="color: var(--pp-primary, #e11d48); font-weight: 700;">15%</span>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    } else {
+      modal.style.display = 'flex';
+    }
+
+    const progressBar = document.getElementById('ai-modal-progress');
+    const statusText = document.getElementById('ai-modal-status');
+    const percentText = document.getElementById('ai-modal-percent');
+
+    let currentProgress = 15;
+    const steps = [
+      { p: 35, text: 'Querying vector audience profiles...' },
+      { p: 60, text: 'Drafting multi-funnel ad scripts...' },
+      { p: 85, text: 'Optimizing hooks & CTA benchmarks...' },
+      { p: 95, text: 'Finalizing campaign strategy cards...' }
+    ];
+    let stepIdx = 0;
+
+    const progressInterval = setInterval(() => {
+      if (stepIdx < steps.length) {
+        currentProgress = steps[stepIdx].p;
+        if (progressBar) progressBar.style.width = currentProgress + '%';
+        if (statusText) statusText.textContent = steps[stepIdx].text;
+        if (percentText) percentText.textContent = currentProgress + '%';
+        stepIdx++;
+      }
+    }, 800);
+
     const btn = document.getElementById('ai-generate-ad-btn');
     const originalText = btn.innerText;
     btn.innerText = isRegen ? 'Regenerating...' : 'Generating...';
@@ -215,6 +268,10 @@ export function renderCampaignBuilder(container, state) {
     try {
       const res = await fetch(window.pixelonwp_admin_vars.ajaxurl, { method: 'POST', body: formData });
       const json = await res.json();
+
+      if (progressBar) progressBar.style.width = '100%';
+      if (percentText) percentText.textContent = '100%';
+      if (statusText) statusText.textContent = 'Complete!';
 
       if (json.success && json.data) {
         renderResults(json.data);
@@ -242,6 +299,11 @@ export function renderCampaignBuilder(container, state) {
         </div>
       `;
     } finally {
+      clearInterval(progressInterval);
+      setTimeout(() => {
+        if (modal) modal.style.display = 'none';
+      }, 300);
+
       btn.innerText = 'Generate Campaign';
       btn.disabled = false;
       if (regenBtn) {

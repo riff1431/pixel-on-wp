@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 
 class PixelOnWP_AI_Engine
 {
-    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=';
+    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=';
 
     public function register_hooks(\PixelOnWP\PixelOnWP_Loader $loader): void
     {
@@ -32,6 +32,7 @@ class PixelOnWP_AI_Engine
         $loader->add_action('wp_ajax_pixelonwp_save_ai_api_keys', $this, 'save_ai_api_keys');
         $loader->add_action('wp_ajax_pixelonwp_get_ai_api_keys', $this, 'get_ai_api_keys');
         $loader->add_action('wp_ajax_pixelonwp_set_active_provider', $this, 'set_active_provider');
+        $loader->add_action('wp_ajax_pixelonwp_test_ai_connection', $this, 'test_ai_connection');
     }
 
     public function sync_visitor_data(): void
@@ -221,9 +222,11 @@ class PixelOnWP_AI_Engine
 
         $gemini_key = isset($_POST['gemini_key']) ? sanitize_text_field(wp_unslash($_POST['gemini_key'])) : '';
         $chatgpt_key = isset($_POST['chatgpt_key']) ? sanitize_text_field(wp_unslash($_POST['chatgpt_key'])) : '';
+        $openrouter_key = isset($_POST['openrouter_key']) ? sanitize_text_field(wp_unslash($_POST['openrouter_key'])) : '';
 
         update_option('pixelonwp_gemini_api_key', $gemini_key);
         update_option('pixelonwp_chatgpt_api_key', $chatgpt_key);
+        update_option('pixelonwp_openrouter_api_key', $openrouter_key);
 
         // Clear AI caches so fresh responses come from the new provider
         delete_transient('pixelonwp_ai_insights_cache');
@@ -249,13 +252,15 @@ class PixelOnWP_AI_Engine
             wp_send_json_error(['message' => 'Invalid nonce']);
         }
 
-        // Return masked keys for security
+        // Return keys (admin only)
         $gemini_key = get_option('pixelonwp_gemini_api_key', '');
         $chatgpt_key = get_option('pixelonwp_chatgpt_api_key', '');
+        $openrouter_key = get_option('pixelonwp_openrouter_api_key', '');
 
         wp_send_json_success([
-            'gemini_key' => $gemini_key, // Full key sent back (admin only)
+            'gemini_key' => $gemini_key,
             'chatgpt_key' => $chatgpt_key,
+            'openrouter_key' => $openrouter_key,
             'provider_status' => PixelOnWP_AI_Provider::get_status()
         ]);
     }
@@ -275,7 +280,7 @@ class PixelOnWP_AI_Engine
 
         $active_provider = isset($_POST['active_provider']) ? sanitize_text_field(wp_unslash($_POST['active_provider'])) : 'inbuilt';
         
-        if (in_array($active_provider, ['gemini', 'chatgpt', 'inbuilt'], true)) {
+        if (in_array($active_provider, ['gemini', 'chatgpt', 'openrouter', 'inbuilt'], true)) {
             update_option('pixelonwp_active_provider', $active_provider);
             
             // Clear AI caches so fresh responses come from the new provider
@@ -336,5 +341,73 @@ class PixelOnWP_AI_Engine
         }
         
         update_option('pixelonwp_ai_table_created', '1');
+    }
+
+    /**
+     * Test the connection for a specific AI provider dynamically.
+     */
+    public function test_ai_connection(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Unauthorized']);
+        }
+
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'PixelOnWP_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+        }
+
+        $provider = isset($_POST['provider']) ? sanitize_text_field(wp_unslash($_POST['provider'])) : '';
+        $api_key = isset($_POST['api_key']) ? sanitize_text_field(wp_unslash($_POST['api_key'])) : '';
+
+        if (empty($provider)) {
+            wp_send_json_error(['message' => 'Provider not specified.']);
+        }
+
+        // Lightweight connection verification prompt
+        $prompt = "Say 'Hello Connection!' in exactly 2 words.";
+        $result = null;
+        $error_detail = '';
+
+        if ($provider === 'gemini') {
+            PixelOnWP_Gemini_Client::$last_error = '';
+            $result = PixelOnWP_Gemini_Client::generate_with_key($api_key, $prompt, 0.4, false, 15);
+            $error_detail = PixelOnWP_Gemini_Client::$last_error;
+        } elseif ($provider === 'chatgpt') {
+            PixelOnWP_ChatGPT_Client::$last_error = '';
+            $result = PixelOnWP_ChatGPT_Client::generate($prompt, 0.4, false, 15, $api_key);
+            $error_detail = PixelOnWP_ChatGPT_Client::$last_error;
+        } elseif ($provider === 'openrouter') {
+            PixelOnWP_OpenRouter_Client::$last_error = '';
+            $result = PixelOnWP_OpenRouter_Client::generate($prompt, 0.4, false, 25, $api_key);
+            $error_detail = PixelOnWP_OpenRouter_Client::$last_error;
+        } else {
+            wp_send_json_error(['message' => 'Invalid provider specified.']);
+        }
+
+        if ($result) {
+            $resp_text = isset($result['raw_text']) ? $result['raw_text'] : (is_array($result) ? json_encode($result) : $result);
+            wp_send_json_success([
+                'message' => 'Connection successful!',
+                'response' => trim(strip_tags($resp_text))
+            ]);
+        }
+
+        // Attempt to parse structured error message for clean display
+        $clean_error = 'Unknown API response error.';
+        if (!empty($error_detail)) {
+            $clean_error = $error_detail;
+            
+            // Try to extract nested JSON error messages from raw HTTP responses
+            if (preg_match('/HTTP \d+: (\{.*\})/s', $error_detail, $matches)) {
+                $err_json = json_decode($matches[1], true);
+                if (isset($err_json['error']['message'])) {
+                    $clean_error = $err_json['error']['message'];
+                }
+            }
+        }
+
+        wp_send_json_error([
+            'message' => $clean_error
+        ]);
     }
 }

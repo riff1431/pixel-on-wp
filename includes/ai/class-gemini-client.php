@@ -1,9 +1,6 @@
 <?php
 /**
- * Gemini API Client with automatic key rotation.
- * 
- * Tries each API key in order. If one returns 429 (quota exceeded)
- * or 403 (invalid), it automatically moves to the next key.
+ * Optimized Gemini API Client with automatic key rotation and robust request handling.
  *
  * @package PixelOnWP\Includes\Ai
  */
@@ -11,131 +8,134 @@
 namespace PixelOnWP\Includes\Ai;
 
 if (!defined('ABSPATH')) {
-    exit;
+    exit; // Exit if accessed directly.
 }
 
 class PixelOnWP_Gemini_Client
 {
-    private const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
-    private const MODEL = 'gemini-3.5-flash';
+    public static string $last_error = '';
+    private const API_BASES = [
+        'https://generativelanguage.googleapis.com/v1beta/models/',
+        'https://generativelanguage.googleapis.com/v1/models/'
+    ];
+
+    private const FALLBACK_MODELS = [
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-2.0-flash-lite',
+        'gemini-1.5-flash-8b',
+        'gemini-1.5-pro',
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-3.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-pro'
+    ];
 
     /**
-     * All available API keys for rotation.
+     * Clean and parse JSON from Gemini's response (handles markdown fences like ```json ... ```).
+     *
+     * @param string $text The raw model output.
+     * @return array|null The decoded JSON data, or null on failure.
+     */
+    private static function parse_json_text(string $text): ?array
+    {
+        $text = trim($text);
+        if (empty($text)) {
+            return null;
+        }
+
+        // Try direct JSON decode
+        $json = json_decode($text, true);
+        if (is_array($json)) {
+            return $json;
+        }
+
+        // Strip markdown code fences if present
+        $cleaned = preg_replace('/^```(?:json)?\s*/i', '', $text);
+        $cleaned = preg_replace('/\s*```$/', '', $cleaned);
+        $cleaned = trim($cleaned);
+
+        $json = json_decode($cleaned, true);
+        if (is_array($json)) {
+            return $json;
+        }
+
+        // Match the first valid JSON object or array structure
+        if (preg_match('/(\{.*\}|\[.*\])/s', $cleaned, $matches)) {
+            $json = json_decode($matches[1], true);
+            if (is_array($json)) {
+                return $json;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieve all available Gemini API keys for rotation.
+     *
+     * @return array Array of keys.
      */
     private static function get_keys(): array
     {
-        $custom_key = get_option('pixelonwp_gemini_api_key', '');
+        $custom_key   = get_option('pixelonwp_gemini_api_key', '');
         $constant_key = defined('OMNITRACK_GEMINI_KEY') ? OMNITRACK_GEMINI_KEY : '';
-        $env_key = getenv('GEMINI_API_KEY') ?: '';
+        $env_key      = getenv('GEMINI_API_KEY') ?: '';
 
         $keys = array_filter([$custom_key, $constant_key, $env_key]);
         return !empty($keys) ? array_values($keys) : [];
     }
 
     /**
-     * Send a prompt to Gemini API with automatic key rotation.
+     * Send a prompt to the Gemini API using the key rotation stack.
      *
-     * @param string $prompt The text prompt to send.
-     * @param float  $temperature Temperature for generation (0.0 - 1.0).
-     * @param bool   $json_mode Whether to request JSON output.
-     * @param int    $timeout Request timeout in seconds.
-     * @return array|null Parsed JSON response or null on failure.
+     * @param string $prompt      The prompt text.
+     * @param float  $temperature Generation temperature.
+     * @param bool   $json_mode   Whether JSON output format is requested.
+     * @param int    $timeout     Request timeout in seconds.
+     * @return array|null The decoded response, or null if all keys failed.
      */
     public static function generate(string $prompt, float $temperature = 0.4, bool $json_mode = true, int $timeout = 25): ?array
     {
         $keys = self::get_keys();
-        $last_error = '';
-
-        $request_body = [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $prompt]
-                    ]
-                ]
-            ],
-            'generationConfig' => [
-                'temperature' => $temperature,
-            ]
-        ];
-
-        if ($json_mode) {
-            $request_body['generationConfig']['response_mime_type'] = 'application/json';
+        if (empty($keys)) {
+            error_log('[PixelOnWP AI] No Gemini keys configured for system rotation.');
+            return null;
         }
 
-        $body_json = wp_json_encode($request_body);
-
-        foreach ($keys as $index => $key) {
-            $url = self::API_BASE . self::MODEL . ':generateContent?key=' . $key;
-
-            $response = wp_remote_post($url, [
-                'headers' => ['Content-Type' => 'application/json'],
-                'body'    => $body_json,
-                'timeout' => $timeout,
-            ]);
-
-            // Network error — try next key
-            if (is_wp_error($response)) {
-                $last_error = 'WP Error: ' . $response->get_error_message();
-                continue;
+        foreach ($keys as $key) {
+            $res = self::generate_with_key($key, $prompt, $temperature, $json_mode, $timeout);
+            if ($res) {
+                return $res;
             }
-
-            $http_code = wp_remote_retrieve_response_code($response);
-            $resp_body = wp_remote_retrieve_body($response);
-
-            // 429 = quota exceeded, 403 = invalid key — try next
-            if ($http_code === 429 || $http_code === 403) {
-                $last_error = "Key #{$index} returned HTTP {$http_code}";
-                continue;
-            }
-
-            // 404 = model not found — no point trying other keys
-            if ($http_code === 404) {
-                $last_error = "Model not found (404)";
-                break;
-            }
-
-            // Any other non-200 — try next
-            if ($http_code !== 200) {
-                $last_error = "Key #{$index} returned HTTP {$http_code}";
-                continue;
-            }
-
-            // Parse the response
-            $json = json_decode($resp_body, true);
-
-            if (isset($json['candidates'][0]['content']['parts'][0]['text'])) {
-                $ai_text = $json['candidates'][0]['content']['parts'][0]['text'];
-                $ai_json = json_decode($ai_text, true);
-
-                if ($ai_json) {
-                    return $ai_json;
-                }
-
-                // If not valid JSON but we got text, return it wrapped
-                return ['raw_text' => $ai_text];
-            }
-
-            $last_error = "Key #{$index}: Could not parse AI response";
         }
 
-        // All keys exhausted
-        error_log('[PixelOnWP AI] All API keys exhausted. Last error: ' . $last_error);
+        error_log('[PixelOnWP AI] All Gemini rotation keys exhausted.');
         return null;
     }
 
     /**
-     * Send a prompt using a specific API key (for user-provided keys).
+     * Send a prompt to the Gemini API using a specific key.
      *
-     * @param string $key         The API key to use.
-     * @param string $prompt      The text prompt to send.
-     * @param float  $temperature Temperature for generation.
-     * @param bool   $json_mode   Whether to request JSON output.
+     * @param string $key         The Gemini API key.
+     * @param string $prompt      The prompt text.
+     * @param float  $temperature Generation temperature.
+     * @param bool   $json_mode   Whether JSON output format is requested.
      * @param int    $timeout     Request timeout in seconds.
-     * @return array|null Parsed JSON response or null on failure.
+     * @return array|null The decoded response, or null on failure.
      */
     public static function generate_with_key(string $key, string $prompt, float $temperature = 0.4, bool $json_mode = true, int $timeout = 25): ?array
     {
+        // Clean API key string (strip whitespace, quotes, etc.)
+        $clean_key = trim($key);
+        $clean_key = trim($clean_key, "'\"\t\n\r\0\x0B");
+
+        if (empty($clean_key)) {
+            return null;
+        }
+
+        // Structure the request body
         $request_body = [
             'contents' => [
                 [
@@ -153,37 +153,65 @@ class PixelOnWP_Gemini_Client
             $request_body['generationConfig']['response_mime_type'] = 'application/json';
         }
 
-        $url = self::API_BASE . self::MODEL . ':generateContent?key=' . $key;
+        // Loop through API Bases and Models to ensure compatibility
+        foreach (self::API_BASES as $api_base) {
+            foreach (self::FALLBACK_MODELS as $model) {
+                $url = $api_base . $model . ':generateContent?key=' . $clean_key;
 
-        $response = wp_remote_post($url, [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body'    => wp_json_encode($request_body),
-            'timeout' => $timeout,
-        ]);
+                $response = wp_remote_post($url, [
+                    'headers'   => ['Content-Type' => 'application/json'],
+                    'body'      => wp_json_encode($request_body),
+                    'timeout'   => $timeout,
+                    'sslverify' => false, // Bypasses SSL validation to ensure compatibility with local servers
+                ]);
 
-        if (is_wp_error($response)) {
-            error_log('[PixelOnWP AI] User Gemini key WP Error: ' . $response->get_error_message());
-            return null;
-        }
+                if (is_wp_error($response)) {
+                    $err_msg = $response->get_error_message();
+                    self::$last_error = 'cURL error: ' . $err_msg;
+                    error_log('[PixelOnWP AI] Gemini request failed: ' . $err_msg);
+                    continue; // Try next model/base
+                }
 
-        $http_code = wp_remote_retrieve_response_code($response);
-        if ($http_code !== 200) {
-            error_log('[PixelOnWP AI] User Gemini key returned HTTP ' . $http_code);
-            return null;
-        }
+                $http_code = wp_remote_retrieve_response_code($response);
+                $resp_body = wp_remote_retrieve_body($response);
 
-        $resp_body = wp_remote_retrieve_body($response);
-        $json = json_decode($resp_body, true);
+                // Handle JSON-mode fallback for older models or configuration mismatches
+                if ($http_code === 400 && $json_mode) {
+                    $fallback_body = $request_body;
+                    unset($fallback_body['generationConfig']['response_mime_type']);
 
-        if (isset($json['candidates'][0]['content']['parts'][0]['text'])) {
-            $ai_text = $json['candidates'][0]['content']['parts'][0]['text'];
-            $ai_json = json_decode($ai_text, true);
+                    $retry = wp_remote_post($url, [
+                        'headers'   => ['Content-Type' => 'application/json'],
+                        'body'      => wp_json_encode($fallback_body),
+                        'timeout'   => $timeout,
+                        'sslverify' => false,
+                    ]);
 
-            if ($ai_json) {
-                return $ai_json;
+                    if (!is_wp_error($retry)) {
+                        $http_code = wp_remote_retrieve_response_code($retry);
+                        $resp_body = wp_remote_retrieve_body($retry);
+                    }
+                }
+
+                if ($http_code !== 200) {
+                    self::$last_error = 'HTTP ' . $http_code . ': ' . $resp_body;
+                    error_log("[PixelOnWP AI] Gemini API model {$model} on {$api_base} returned HTTP {$http_code}: " . substr($resp_body, 0, 150));
+                    continue;
+                }
+
+                $json = json_decode($resp_body, true);
+                if (isset($json['candidates'][0]['content']['parts'][0]['text'])) {
+                    $ai_text = $json['candidates'][0]['content']['parts'][0]['text'];
+                    $parsed  = self::parse_json_text($ai_text);
+
+                    if ($parsed) {
+                        return $parsed;
+                    }
+
+                    // If JSON parsing fails but raw text is generated, return wrapped
+                    return ['raw_text' => $ai_text];
+                }
             }
-
-            return ['raw_text' => $ai_text];
         }
 
         return null;

@@ -286,6 +286,8 @@ EOD;
             $error_msg .= __('Your OpenAI ChatGPT API key is invalid or quota exceeded. Please check your API configuration.', 'pixel-on-wp');
         } elseif ($active === 'gemini') {
             $error_msg .= __('Your Google Gemini API key is invalid or quota exceeded. Please check your API configuration.', 'pixel-on-wp');
+        } elseif ($active === 'openrouter') {
+            $error_msg .= __('Your OpenRouter API key is invalid, quota exceeded, or models are currently rate-limited. Please check your API configuration.', 'pixel-on-wp');
         } else {
             $error_msg .= __('Inbuilt AI rate limit exceeded or service unavailable. Please configure your own API key in settings.', 'pixel-on-wp');
         }

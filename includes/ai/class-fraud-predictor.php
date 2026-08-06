@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 
 class PixelOnWP_Fraud_Predictor
 {
-    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=';
+    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=';
 
     public function register_hooks(\PixelOnWP\PixelOnWP_Loader $loader): void
     {

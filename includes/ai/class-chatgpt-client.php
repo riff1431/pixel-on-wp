@@ -16,6 +16,7 @@ if (!defined('ABSPATH')) {
 
 class PixelOnWP_ChatGPT_Client
 {
+    public static string $last_error = '';
     private const API_URL = 'https://api.openai.com/v1/chat/completions';
     private const MODEL = 'gpt-4o-mini';
 
@@ -44,9 +45,9 @@ class PixelOnWP_ChatGPT_Client
      * @param int    $timeout    Request timeout in seconds.
      * @return array|null Parsed JSON response or null on failure.
      */
-    public static function generate(string $prompt, float $temperature = 0.4, bool $json_mode = true, int $timeout = 25): ?array
+    public static function generate(string $prompt, float $temperature = 0.4, bool $json_mode = true, int $timeout = 25, string $custom_key = ''): ?array
     {
-        $key = self::get_key();
+        $key = !empty($custom_key) ? $custom_key : self::get_key();
         if (empty($key)) {
             return null;
         }
@@ -82,7 +83,9 @@ class PixelOnWP_ChatGPT_Client
         ]);
 
         if (is_wp_error($response)) {
-            error_log('[PixelOnWP AI] ChatGPT WP Error: ' . $response->get_error_message());
+            $err_msg = $response->get_error_message();
+            self::$last_error = 'cURL error: ' . $err_msg;
+            error_log('[PixelOnWP AI] ChatGPT WP Error: ' . $err_msg);
             return null;
         }
 
@@ -90,6 +93,7 @@ class PixelOnWP_ChatGPT_Client
         $resp_body = wp_remote_retrieve_body($response);
 
         if ($http_code !== 200) {
+            self::$last_error = 'HTTP ' . $http_code . ': ' . $resp_body;
             error_log('[PixelOnWP AI] ChatGPT returned HTTP ' . $http_code . ': ' . $resp_body);
             return null;
         }

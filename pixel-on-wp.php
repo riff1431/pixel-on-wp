@@ -32,6 +32,10 @@ if (!defined('OMNITRACK_GEMINI_KEY')) {
   define('OMNITRACK_GEMINI_KEY', getenv('GEMINI_API_KEY') ?: '');
 }
 
+if (!defined('PIXELONWP_GITHUB_TOKEN')) {
+  define('PIXELONWP_GITHUB_TOKEN', getenv('PIXELONWP_GITHUB_TOKEN') ?: '');
+}
+
 define('PixelOnWP_FILE', __FILE__);
 define('PixelOnWP_PATH', plugin_dir_path(__FILE__));
 define('PixelOnWP_URL', plugin_dir_url(__FILE__));
@@ -62,6 +66,13 @@ final class PixelOnWP_Main
    * @var object|null
    */
   private ?object $container = null;
+
+  /**
+   * Plugin update checker instance.
+   *
+   * @var object|null
+   */
+  public ?object $update_checker = null;
 
   /**
    * Retrieves the main instance of the plugin.
@@ -152,6 +163,9 @@ final class PixelOnWP_Main
   {
     // Load text domain for localization.
     load_plugin_textdomain('pixel-on-wp', false, dirname(PixelOnWP_BASENAME) . '/languages');
+
+    // Initialize automatic updates.
+    $this->init_update_checker();
 
     // Initialize core container if available.
     if (class_exists('\\PixelOnWP\\Includes\\Core\\PixelOnWP_Container')) {
@@ -393,6 +407,31 @@ final class PixelOnWP_Main
      * @since 1.0.0
      */
     do_action('PixelOnWP_loaded');
+  }
+
+  /**
+   * Initializes the plugin update checker.
+   *
+   * @since 1.0.4
+   * @return void
+   */
+  private function init_update_checker(): void
+  {
+    if (file_exists(PixelOnWP_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php')) {
+      require_once PixelOnWP_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
+
+      $this->update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+        'https://github.com/riff1431/pixel-on-wp/',
+        PixelOnWP_FILE,
+        'pixel-on-wp'
+      );
+
+      $this->update_checker->setBranch('main');
+
+      if (defined('PIXELONWP_GITHUB_TOKEN') && !empty(PIXELONWP_GITHUB_TOKEN)) {
+        $this->update_checker->setAuthentication(PIXELONWP_GITHUB_TOKEN);
+      }
+    }
   }
 
   /**
